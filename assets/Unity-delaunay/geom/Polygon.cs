@@ -144,7 +144,6 @@ namespace Delaunay
                 Dictionary<LineSegment, Vector2> intersections = new Dictionary<LineSegment, Vector2>();
                 
                 List<Vector2> tempIntersect = new List<Vector2>();
-                int connections = 0;
                 //want to get both lines that hav an X at A.y
                 //have to find function of all lines
                 //have to plug in A.y into all functions
@@ -175,14 +174,32 @@ namespace Delaunay
                             if (delta != 0)
                             {
                                 Vector2 tempvec = new Vector2((B2 * C1 - B1 * C2) / delta, (A1 * C2 - A2 * C1) / delta);
+                                if(Mathf.Abs(ps1.x) > Mathf.Abs(pe1.x))
+                                {
+                                    if(Mathf.Abs(tempvec.x) < Mathf.Abs(ps1.x) && Mathf.Abs(tempvec.x) > Mathf.Abs(pe1.x))
+                                    {
+                                        tempIntersect.Add(tempvec);
+                                        intersections.Add(new LineSegment(ps1, pe1), tempvec);
+                                    }
+                                }
+                                else
+                                {
+                                    if (Mathf.Abs(tempvec.x) > Mathf.Abs(ps1.x) && Mathf.Abs(tempvec.x) < Mathf.Abs(pe1.x))
+                                    {
+                                        tempIntersect.Add(tempvec);
+                                        intersections.Add(new LineSegment(ps1, pe1), tempvec);
+                                    }
+                                }
+                                /*
                                 tempIntersect.Add(tempvec);
                                 intersections.Add(new LineSegment(ps1, pe1), tempvec);
+                                */
                             }
                         }
-                        if (i + 1 > temparray.Length)
+                        else if (i + 1 >= temparray.Length)
                         {
-                            Vector2 ps1 = temparray[i];
-                            Vector2 pe1 = temparray[0];
+                            Vector2 ps1 = temparray[0];
+                            Vector2 pe1 = temparray[i];
 
                             Vector2 ps2 = new Vector2(-200000, A.z);
                             Vector2 pe2 = new Vector2(200000, A.z);
@@ -204,81 +221,34 @@ namespace Delaunay
                             if (delta != 0)
                             {
                                 Vector2 tempvec = new Vector2((B2 * C1 - B1 * C2) / delta, (A1 * C2 - A2 * C1) / delta);
-                                tempIntersect.Add(tempvec);
-                                intersections.Add(new LineSegment(ps1, pe1), tempvec);
-                            }
-                        }
-
-
-
-
-
-
-
-
-
-
-
-
-                        if (i + 1 < temparray.Length)
-                        {
-                            Vector2 ps1 = temparray[i];
-                            Vector2 pe1 = temparray[i + 1];
-
-                            Vector2 ps2 = new Vector2(A.x, -200000);
-                            Vector2 pe2 = new Vector2(A.x, 200000);
-
-                            float A1 = pe1.y - ps1.y;
-                            float B1 = ps1.x - pe1.x;
-                            float C1 = A1 * ps1.x + B1 * ps1.y;
-
-                            float A2 = pe2.y - ps2.y;
-                            float B2 = ps2.x - pe2.x;
-                            float C2 = A2 * ps2.x + B2 * ps2.y;
-
-                            float delta = A1 * B2 - A2 * B1;
-                            if (delta != 0)
-                            {
-                                Vector2 tempvec = new Vector2((B2 * C1 - B1 * C2) / delta, (A1 * C2 - A2 * C1) / delta);
-                                tempIntersect.Add(tempvec);
-                                intersections.Add(new LineSegment(ps1, pe1), tempvec);
-                            }
-                        }
-                        if (i + 1 > temparray.Length)
-                        {
-                            Vector2 ps1 = temparray[i];
-                            Vector2 pe1 = temparray[0];
-
-                            Vector2 ps2 = new Vector2(A.x, -200000);
-                            Vector2 pe2 = new Vector2(A.x, 200000);
-
-                            float A1 = pe1.y - ps1.y;
-                            float B1 = ps1.x - pe1.x;
-                            float C1 = A1 * ps1.x + B1 * ps1.y;
-
-                            float A2 = pe2.y - ps2.y;
-                            float B2 = ps2.x - pe2.x;
-                            float C2 = A2 * ps2.x + B2 * ps2.y;
-
-                            float delta = A1 * B2 - A2 * B1;
-                            if (delta != 0)
-                            {
-                                Vector2 tempvec = new Vector2((B2 * C1 - B1 * C2) / delta, (A1 * C2 - A2 * C1) / delta);
-                                tempIntersect.Add(tempvec);
-                                intersections.Add(new LineSegment(ps1, pe1), tempvec);
+                                if (Mathf.Abs(ps1.x) > Mathf.Abs(pe1.x))
+                                {
+                                    if (Mathf.Abs(tempvec.x) < Mathf.Abs(ps1.x) && Mathf.Abs(tempvec.x) > Mathf.Abs(pe1.x))
+                                    {
+                                        tempIntersect.Add(tempvec);
+                                        intersections.Add(new LineSegment(ps1, pe1), tempvec);
+                                    }
+                                }
+                                else
+                                {
+                                    if (Mathf.Abs(tempvec.x) > Mathf.Abs(ps1.x) && Mathf.Abs(tempvec.x) < Mathf.Abs(pe1.x))
+                                    {
+                                        tempIntersect.Add(tempvec);
+                                        intersections.Add(new LineSegment(ps1, pe1), tempvec);
+                                    }
+                                }
                             }
                         }
                     }
                 }
-
-
-
+                
                 //NOW, I HAVE TO MAKE IT SEE IF IT'S COLLIDING ON THE GIVIN LINE
 
+                Vector2? l = null;
+                Vector2? r = null;
                 foreach(KeyValuePair<LineSegment, Vector2> item in intersections)
                 {
                     bool inx = false;
-                    bool iny = false;
                     Vector2 left = (Vector2)item.Key.p0;
                     Vector2 right = (Vector2)item.Key.p1;
                     if(left.x > right.x)
@@ -295,32 +265,39 @@ namespace Delaunay
                             inx = true;
                         }
                     }
-
-                    if (left.y > right.y)
+                    
+                    if (inx)
                     {
-                        if (item.Value.y <= left.y && item.Value.y >= right.y)
+                        if(l == null)
                         {
-                            iny = true;
+                            l = item.Value;
+                        }
+                        else
+                        {
+                            if(r == null)
+                            {
+                                r = item.Value;
+                            }
+                            
+                        }
+                    }
+                }
+                if(intersections.Count >= 2 && (l != null && r != null))
+                {
+                    if (l.Value.x < r.Value.x)
+                    {
+                        if ((A.x <= r.Value.x) && (A.x >= l.Value.x))
+                        {
+                            return true;
                         }
                     }
                     else
                     {
-                        if (item.Value.y >= left.y && item.Value.y <= right.y)
+                        if ((A.x >= r.Value.x) && (A.x <= l.Value.x))
                         {
-                            iny = true;
+                            return true;
                         }
                     }
-
-                    if (iny && inx)
-                    {
-                        connections++;
-                    }
-                }
-
-                
-                if(connections >= 3)
-                {
-                    return true;
                 }
                 return false;
             }

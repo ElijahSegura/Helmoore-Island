@@ -17,10 +17,6 @@ public class Character : Player {
     // Update is called once per frame
 
     void Update() {
-        if(!isLocalPlayer)
-        {
-            return;
-        }
         control = GetComponent<CharacterController>();
         if (control.isGrounded)
         {
@@ -46,6 +42,7 @@ public class Character : Player {
     {
         return this.CharacterIndex;
     }
+    
     public void chooseClass(Class c)
     {
         this.Class = c;

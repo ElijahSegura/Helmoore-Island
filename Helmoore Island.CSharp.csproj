@@ -67,12 +67,14 @@
     <Compile Include="Assets\CodingElements\Classes\Class.cs" />
     <Compile Include="Assets\CodingElements\Skills\Cooking.cs" />
     <Compile Include="Assets\CodingElements\Skills\Skill.cs" />
+    <Compile Include="Assets\CodingElements\Square.cs" />
+    <Compile Include="Assets\CodingElements\Triangle.cs" />
     <Compile Include="Assets\Map\Chunk.cs" />
     <Compile Include="Assets\Map\Map.cs" />
-    <Compile Include="Assets\Map\MeshGen.cs" />
     <Compile Include="Assets\Map\Voronoi\Perabula.cs" />
-    <Compile Include="Assets\Map\Voronoi\Triangle.cs" />
     <Compile Include="Assets\Map\Voronoi\VoronoiMap.cs" />
+    <Compile Include="Assets\MapGen.cs" />
+    <Compile Include="Assets\PerlinForms.cs" />
     <Compile Include="Assets\PorabolaTes.cs" />
     <Compile Include="Assets\Resources\Player\CameraControll.cs" />
     <Compile Include="Assets\Resources\Player\Character.cs" />
@@ -96,7 +98,6 @@
     <Compile Include="Assets\Unity-delaunay\geom\Polygon.cs" />
     <Compile Include="Assets\Unity-delaunay\geom\Winding.cs" />
     <Compile Include="Assets\Unity-delaunay\utils\IDisposable.cs" />
-    <Compile Include="Assets\VoronoiDemo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\MetalTest.shader" />

@@ -1,8 +1,8 @@
-﻿using UnityEngine.Networking;
+﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Player : NetworkBehaviour {
+public class Player : MonoBehaviour {
     private Dictionary<string, Skill> skills = new Dictionary<string, Skill>() { {"Cooking", new Cooking()} };
 
     public Skill getSkill(string skillName)

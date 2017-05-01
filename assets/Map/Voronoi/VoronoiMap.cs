@@ -11,7 +11,6 @@ public class VoronoiMap : MonoBehaviour {
     private int mms = 200000;
     private List<Vector3> verts = new List<Vector3>();
     private List<int> tris = new List<int>();
-    private Triangle tSolver = new Triangle();
     private List<Vector3> tCenters = new List<Vector3>();
     public int mapSize = 3;
     public int chunkSize = 250;
@@ -46,11 +45,11 @@ public class VoronoiMap : MonoBehaviour {
             {
                 if ((dotValue + 1) + iteration + 1 < verts.Count)
                 {
-                    Vector3 temp = tSolver.solveCenter(temparray[0 + iteration], temparray[1 + iteration], temparray[(dotValue + 1) + iteration]);
+                    Vector3 temp = solveCenter(new Vector3[] { temparray[0 + iteration], temparray[1 + iteration], temparray[(dotValue + 1) + iteration] });
                     temp.z = temp.y;
                     temp.y = 0;
                     tCenters.Add(temp);
-                    temp = tSolver.solveCenter(temparray[(dotValue + 1) + iteration], temparray[1 + iteration], temparray[(dotValue + 1) + iteration + 1]);
+                    temp = solveCenter(new Vector3[] { temparray[(dotValue + 1) + iteration], temparray[1 + iteration], temparray[(dotValue + 1) + iteration + 1] });
                     temp.z = temp.y;
                     temp.y = 0;
                     tCenters.Add(temp);
@@ -97,5 +96,24 @@ public class VoronoiMap : MonoBehaviour {
             c.calculate();
             c.draw();
         }
+    }
+
+
+
+
+
+
+    private Vector3 solveCenter(Vector3[] _vertices)
+    {
+        float x = 0;
+        float y = 0;
+        foreach (Vector2 v in _vertices)
+        {
+            x += v.x;
+            y += v.y;
+        }
+        y /= _vertices.Length;
+        x /= _vertices.Length;
+        return new Vector3(x, 0, y);
     }
 }
