@@ -41,9 +41,6 @@ public class PerlinForms {
                         Vector3 tempend = new Vector3(t.x + ((end.x - t.x) * Random.Range(0f, 1f - per)), 0, t.z + ((end.z - t.z) * Random.Range(0f, 1f - per)));
                         Vector3 tempstart = new Vector3(t.x, 0, t.z);
                         float txs = 1f, tys = 1f;
-                        //Debug.Log(tempend.x + "XXX" + tempend.z);
-                        
-                        //Debug.Log(txs + "::" + tys);
                         for (int j = 0; j < iter; j++)
                         {
                             width = widthVariation * (0.5f - Mathf.PerlinNoise((tempstart.x + j + rxoff) / f, (tempstart.z + j + ryoff) / f));

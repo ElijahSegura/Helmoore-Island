@@ -12,22 +12,20 @@ public class MapGen : MonoBehaviour
     [SerializeField]
     private int
         m_pointCount = 380;
-    public AnimationCurve c = new AnimationCurve();
+    public List<AnimationCurve> c = new List<AnimationCurve>();
 
     public List<Material> Materials = new List<Material>();
-    private Map serverMap;//THIS IS WHAT WE WILL SEND OVER THE SERVER TO THE CLIENT, IT WILL HAVE MAPHEIGHT DATA, CURRENT CHUNK DATA, AND MAYBE SOME OTHER THINGS
+    private Map serverMap;//THIS IS WHAT WE WILL SEND OVER THE SERVER TO THE CLIENT, IT WILL HAVE MAPHEIGHT DATA, CURRENT CHUNK DATA, AND MAYBE SOME OTHER THINGS then we'll destroy the object that has this script to clean up some memory from the 2d arrays
     //blue is ocean, yellow is desert, green is plains, dark green is forest, purple is swamp
     private Color[] biomes = new Color[]{ Color.blue, Color.yellow, Color.green, new Color(Color.green.r / 2, Color.green.g / 2, Color.green.b / 2), Color.red + Color.blue, Color.white };
-    public GameObject mapPiece;
     private Chunk[,] chunkMap;
     private int mapSize = 60;
     private int chunkSize = 20; //max size for chunksize is 250, 251 is over the mesh vertex limit
     private float it;
     private float chunkscale;
-    public GameObject Temp;
     private int rivers;
     private Vector2 proxyEquator;
-    private float[,] biome;
+    private int[,] biome;
     private List<Vector2> boundary = new List<Vector2>();
     private List<PerlinForms> riverForms = new List<PerlinForms>();
 
@@ -43,7 +41,11 @@ public class MapGen : MonoBehaviour
     private List<Vector2> secondaryPoints = new List<Vector2>();
     private List<Polygon> secondPolygons = new List<Polygon>();
     private List<Polygon> Definedvm = new List<Polygon>();
-    
+
+    private int[,] islands;
+    private float[,] vertZ;
+    private Square[,] Squares;
+    private float[,] xvertZ;
 
     void Start()
     {
@@ -152,24 +154,22 @@ public class MapGen : MonoBehaviour
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// </summary>
 
-    private float[,] vertZ;
-    private Square[,] Squares;
-    private float[,] xvertZ;
+    
     private void load()
     {
-        biome = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
+        biome = new int[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         vertZ = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         Squares = new Square[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         xvertZ = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
+        islands = new int[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         genHeights();
         modifyMesh();
         smooth();
+        detectIslands();
         genRivers();
         genBiomes();
         genSquares();
         genTexture();
-        detectIslands();
-        Debug.Log(islandG.Count);
         loadChunks();
     }
 
@@ -226,6 +226,7 @@ public class MapGen : MonoBehaviour
         }
         foreach (PerlinForms form in riverForms)
         {
+            int isl = islands[(int)(Mathf.Ceil((form.getStart().x + (mapWH / 2)) / (chunkscale))), (int)(Mathf.Ceil((form.getStart().z + (mapWH / 2)) / (chunkscale)))];
             foreach (List<Vector3> River in form.getRivers())
             {
                 foreach (Vector3 v in River)
@@ -238,18 +239,24 @@ public class MapGen : MonoBehaviour
                         {
                             if(vertZ[(x + i) - (distanceModifier / 2), (y + j) - (distanceModifier / 2)] >= -4 && biome[(x + i) - (distanceModifier / 2), (y + j) - (distanceModifier / 2)] != 8)
                             {
-                                    Vector3 temp = new Vector3((((x + i) - (distanceModifier / 2)) * chunkscale - (mapWH / 2)), 0, (((y + j) - (distanceModifier / 2)) * chunkscale - (mapWH / 2)));
-                                    if (Vector3.Distance(v, temp) < Random.Range(750f, 1000f))
+                                Vector3 temp = new Vector3((((x + i) - (distanceModifier / 2)) * chunkscale - (mapWH / 2)), 0, (((y + j) - (distanceModifier / 2)) * chunkscale - (mapWH / 2)));
+                                if (Vector3.Distance(v, temp) < Random.Range(750f, 1000f))
+                                {
+                                    if(islands[(x + i) - (distanceModifier / 2), (y + j) - (distanceModifier / 2)] == isl)
                                     {
                                         biome[(x + i) - (distanceModifier / 2), (y + j) - (distanceModifier / 2)] = 3;
                                     }
-                                    else if (Vector3.Distance(v, temp) < Random.Range(2500f, 3500f))
+                                }
+                                else if (Vector3.Distance(v, temp) < Random.Range(2500f, 3500f))
+                                {
+                                    if (biome[(x + i) - (distanceModifier / 2), (y + j) - (distanceModifier / 2)] != 3)
                                     {
-                                        if (biome[(x + i) - (distanceModifier / 2), (y + j) - (distanceModifier / 2)] != 3)
+                                        if(islands[(x + i) - (distanceModifier / 2), (y + j) - (distanceModifier / 2)] == isl)
                                         {
                                             biome[(x + i) - (distanceModifier / 2), (y + j) - (distanceModifier / 2)] = 2;
                                         }
                                     }
+                                }
                             }
                         }
                     }
@@ -443,41 +450,242 @@ public class MapGen : MonoBehaviour
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        foreach (LineSegment i in islandG)
+    }
+
+    int island = 0;
+    private void FloodFillIsland(int x, int y)
+    {
+        Stack<Vector2> points = new Stack<Vector2>();
+        points.Push(new Vector2(x, y));
+        //fill left and right, if you can go up or down from original point add to points, then repeat with points
+        //add points from all the way left
+        while (points.Count > 0)
         {
-            Gizmos.DrawLine(new Vector3(i.p0.Value.x, 0, i.p0.Value.y), new Vector3(i.p1.Value.x, 0, i.p1.Value.y));
+            Vector2 origin = points.Pop();
+            bool left = true, right = true;
+            bool newUp = false;
+            bool newDown = false;
+            int X = (int)origin.x;
+            int Y = (int)origin.y;
+            int l = 0, r = 0;
+
+            if (vertZ[X, Y + 1] > 0 && islands[X, Y + 1] == 0)
+            {
+                points.Push(new Vector2(X, Y + 1));
+            }
+            else
+            {
+                newUp = true;
+            }
+            if (vertZ[X, Y - 1] > 0 && islands[X, Y - 1] == 0)
+            {
+                points.Push(new Vector2(X, Y - 1));
+            }
+            else
+            {
+                newDown = true;
+            }
+
+            while (right)
+            {
+                r++;
+                if(!newUp)
+                {
+                    if (vertZ[X + r, Y + 1] < 0)
+                    {
+                        newUp = true;
+                    }
+                }
+                else
+                {
+                    if (islands[X + r, Y + 1] == 0 && vertZ[X + r, Y + 1] > 0)
+                    {
+                        points.Push(new Vector2(X + r, Y + 1));
+                        newUp = false;
+                    }
+                }
+
+
+                if(!newDown)
+                {
+                    if (vertZ[X + r, Y - 1] < 0)
+                    {
+                        newDown = true;
+                    }
+                }
+                else
+                {
+                    if (islands[X + r, Y - 1] == 0 && vertZ[X + r, Y - 1] > 0)
+                    {
+                        points.Push(new Vector2(X + r, Y - 1));
+                        newDown = false;
+                    }
+                }
+
+
+
+
+
+                if (islands[X + r, Y] == 0 && vertZ[X + r, Y] > 0)
+                {
+                    islands[X + r, Y] = island;
+                }
+                else
+                {
+                    right = false;
+                }
+            }
+            newUp = false;
+            newDown = false;
+            if (vertZ[X, Y + 1] > 0 && islands[X, Y + 1] == 0)
+            {
+            }
+            else
+            {
+                newUp = true;
+            }
+            if (vertZ[X, Y - 1] > 0 && islands[X, Y - 1] == 0)
+            {
+            }
+            else
+            {
+                newDown = true;
+            }
+
+
+
+
+
+
+
+
+
+            while (left)
+            {
+                l++;
+                if(!newUp)
+                {
+                    if (vertZ[X - l, Y + 1] < 0)
+                    {
+                        newUp = true;
+                    }
+                }
+                else
+                {
+                    if (islands[X - l, Y + 1] == 0 && vertZ[X - l, Y + 1] > 0)
+                    {
+                        points.Push(new Vector2(X - l, Y + 1));
+                        newUp = false;
+                    }
+                }
+
+                if(!newDown)
+                {
+                    if (vertZ[X - l, Y - 1] < 0)
+                    {
+                        newDown = true;
+                    }
+                }
+                else
+                {
+                    if (islands[X - l, Y - 1] == 0 && vertZ[X - l, Y - 1] > 0)
+                    {
+                        points.Push(new Vector2(X - l, Y - 1));
+                        newDown = false;
+                    }
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                if (islands[X - l, Y] == 0 && vertZ[X - l, Y] > 0)
+                {
+                    islands[X - l, Y] = island;
+                }
+                else
+                {
+                    left = false;
+                }
+            }
+            islands[X, Y] = island;
+            
         }
     }
 
+
+    Dictionary<int, float> islandHeights = new Dictionary<int, float>();
     List<LineSegment> islandG = new List<LineSegment>();
     void detectIslands()
     {
         Debug.Log("Starting Islands");
-        //make line segments connecting from one end to the other of the island.
+        
+        for (int x = 0; x < chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y < chunkSize * mapSize; y++)
+            {
+                if(islands[x,y] == 0 && vertZ[x,y] > 0)
+                {
+                    island++;
+                    FloodFillIsland(x, y);
+                }
+            }
+        }
+
+        for (int i = 0; i < island; i++)
+        {
+            islandHeights.Add(i + 1, 0f);
+        }
+
         for (int x = 0; x <= chunkSize * mapSize; x++)
         {
-            LineSegment l;
-            Vector2 start = new Vector2();
-            bool s = false;
-            Vector2 end;
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                if (vertZ[x, y] > 0)
+                int check = islands[x, y];
+                if(check > 0)
                 {
-                    if(!s)
+                    float checkHeight = islandHeights[check];
+                    if (vertZ[x, y] > checkHeight)
                     {
-                        start = new Vector2((x * chunkscale - (mapWH / 2)), (y * chunkscale - (mapWH / 2)));
-                        s = true;
+                        islandHeights.Remove(check);
+                        islandHeights.Add(check, vertZ[x, y]);
                     }
                 }
-                else if(vertZ[x,y] < 0)
+            }
+        }
+
+        for (int i = 0; i < island; i++)
+        {
+            Debug.Log(islandHeights[i + 1]);
+        }
+
+
+        for (int x = 0; x <= chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                if(islands[x,y] > 0)
                 {
-                    if(s)
+                    if (vertZ[x, y] > 0)
                     {
-                        end = new Vector2((x * chunkscale - (mapWH / 2)), (y * chunkscale - (mapWH / 2)));
-                        s = false;
-                        l = new LineSegment(start, end);
-                        islandG.Add(l);
+                        if(islandHeights[islands[x,y]] > 600)
+                        {
+                            vertZ[x, y] *= c[0].Evaluate(vertZ[x, y] / islandHeights[islands[x, y]]);
+                        }
+                        else
+                        {
+                            vertZ[x, y] *= c[1].Evaluate(vertZ[x, y] / islandHeights[islands[x, y]]);
+                        }
                     }
                 }
             }
@@ -568,29 +776,6 @@ public class MapGen : MonoBehaviour
                 
             }
         }
-        max = 0f;
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                if(vertZ[x,y] > max)
-                {
-                    max = vertZ[x, y];
-                }
-            }
-        }
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                if(vertZ[x,y] > 0)
-                {
-                    vertZ[x, y] *= c.Evaluate(vertZ[x, y] / max);
-                }
-            }
-        }
-
-
     }
 
     /// <summary>
@@ -737,27 +922,26 @@ public class MapGen : MonoBehaviour
                 {
                     p = 1f;
                 }
-                if (biome[x,y] >= biomes.Length)
+                if (biome[x, y] >= biomes.Length)
                 {
                     biome[x, y] = biomes.Length - 1;
                 }
-                if(biome[x,y] > 1)
+                if (biome[x, y] > 1)
                 {
-                    texture.SetPixel(x, y, Color.Lerp(biomes[(int)biome[x, y]], Color.white, p));
+                    texture.SetPixel(x, y, Color.Lerp(biomes[biome[x, y]], Color.white, p));
                 }
-                else if(biome[x,y] == 1)
+                else if (biome[x, y] == 1)
                 {
                     texture.SetPixel(x, y, Color.Lerp(Color.yellow, Color.white, p));
                 }
                 else
                 {
-                    texture.SetPixel(x, y, biomes[(int)biome[x, y]]);
+                    texture.SetPixel(x, y, biomes[biome[x, y]]);
                 }
-                if(vertZ[x,y] >= snowMod)
+                if (vertZ[x, y] >= snowMod)
                 {
-                    texture.SetPixel(x, y, Color.Lerp(texture.GetPixel(x,y), Color.white, (vertZ[x,y] - snowMod) / (1100 - snowMod)));
+                    texture.SetPixel(x, y, Color.Lerp(texture.GetPixel(x, y), Color.white, (vertZ[x, y] - snowMod) / (1100 - snowMod)));
                 }
-                
             }
         }
         texture.Apply();
