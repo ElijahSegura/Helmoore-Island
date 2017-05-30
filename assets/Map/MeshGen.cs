@@ -10,7 +10,6 @@ public class MeshGen : MonoBehaviour {
         mesh.mesh = c.getMesh();
         mesh.mesh.name = "Chunk" + x + y;
         GetComponent<MeshCollider>().sharedMesh = mesh.mesh;
-        mesh.mesh.Optimize();
         mesh.mesh.RecalculateNormals();
     }
 

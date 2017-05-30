@@ -10,6 +10,12 @@ public class PerlinForms {
     float f = (80);
     // Use this for initialization
     private Vector3 s, e;
+
+
+
+
+
+    //what i want, slope towards the lowest point
     public PerlinForms (Vector3 start, Vector3 end) {
         start.y = 0;
         end.y = 0;

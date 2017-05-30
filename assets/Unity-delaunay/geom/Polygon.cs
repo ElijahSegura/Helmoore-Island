@@ -1,26 +1,27 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Delaunay.Geo;
 
 namespace Delaunay
 {
 	namespace Geo
 	{
-		public sealed class Polygon
-		{
-			private List<Vector2> _vertices;
+        public sealed class Polygon
+        {
+            private List<Vector2> _vertices;
             private Vector3 center;
             private bool isConnected = false;
             private int edgedConnections = 0;
             private List<Polygon> connections = new List<Polygon>();
             private float leastX, leastY, greatX, greatY;
-            //private List<Vector2> Connected = new List<Vector2>();
+            private bool enabled = false;
 
-			public Polygon (List<Vector2> vertices)
-			{
+            public Polygon(List<Vector2> vertices)
+            {
 
 
-				_vertices = vertices;
+                _vertices = vertices;
                 center = Center();
                 leastX = vertices.ToArray()[0].x;
                 leastY = vertices.ToArray()[0].y;
@@ -28,56 +29,56 @@ namespace Delaunay
                 greatY = vertices.ToArray()[0].y;
                 foreach (Vector2 v in _vertices)
                 {
-                    if(v.x > greatX)
+                    if (v.x > greatX)
                     {
                         greatX = v.x;
                     }
-                    if(v.y > greatY)
+                    if (v.y > greatY)
                     {
                         greatY = v.y;
                     }
-                    if(v.x < leastX)
+                    if (v.x < leastX)
                     {
                         leastX = v.x;
                     }
-                    if(v.y < leastY)
+                    if (v.y < leastY)
                     {
                         leastY = v.y;
                     }
                 }
-			}
+            }
 
-			public float Area ()
-			{
-				return Mathf.Abs (SignedDoubleArea () * 0.5f); // XXX: I'm a bit nervous about this; not sure what the * 0.5 is for, bithacking?
-			}
+            public float Area()
+            {
+                return Mathf.Abs(SignedDoubleArea() * 0.5f); // XXX: I'm a bit nervous about this; not sure what the * 0.5 is for, bithacking?
+            }
 
-			public Winding Winding ()
-			{
-				float signedDoubleArea = SignedDoubleArea ();
-				if (signedDoubleArea < 0) {
-					return Geo.Winding.CLOCKWISE;
-				}
-				if (signedDoubleArea > 0) {
-					return Geo.Winding.COUNTERCLOCKWISE;
-				}
-				return Geo.Winding.NONE;
-			}
+            public Winding Winding()
+            {
+                float signedDoubleArea = SignedDoubleArea();
+                if (signedDoubleArea < 0) {
+                    return Geo.Winding.CLOCKWISE;
+                }
+                if (signedDoubleArea > 0) {
+                    return Geo.Winding.COUNTERCLOCKWISE;
+                }
+                return Geo.Winding.NONE;
+            }
 
-			private float SignedDoubleArea () // XXX: I'm a bit nervous about this because Actionscript represents everything as doubles, not floats
-			{
-				int index, nextIndex;
-				int n = _vertices.Count;
-				Vector2 point, next;
-				float signedDoubleArea = 0; // Losing lots of precision?
-				for (index = 0; index < n; ++index) {
-					nextIndex = (index + 1) % n;
-					point = _vertices [index];
-					next = _vertices [nextIndex];
-					signedDoubleArea += point.x * next.y - next.x * point.y;
-				}
-				return signedDoubleArea;
-			}
+            private float SignedDoubleArea() // XXX: I'm a bit nervous about this because Actionscript represents everything as doubles, not floats
+            {
+                int index, nextIndex;
+                int n = _vertices.Count;
+                Vector2 point, next;
+                float signedDoubleArea = 0; // Losing lots of precision?
+                for (index = 0; index < n; ++index) {
+                    nextIndex = (index + 1) % n;
+                    point = _vertices[index];
+                    next = _vertices[nextIndex];
+                    signedDoubleArea += point.x * next.y - next.x * point.y;
+                }
+                return signedDoubleArea;
+            }
 
             public List<Vector2> points()
             {
@@ -88,7 +89,7 @@ namespace Delaunay
             {
                 float x = 0;
                 float y = 0;
-                foreach(Vector2 v in _vertices)
+                foreach (Vector2 v in _vertices)
                 {
                     x += v.x;
                     y += v.y;
@@ -106,14 +107,14 @@ namespace Delaunay
             public void testConnected(Polygon A)
             {
                 List<Vector2> tempConnections = new List<Vector2>();
-                foreach(Vector2 v in _vertices)
+                foreach (Vector2 v in _vertices)
                 {
                     if (A.points().Contains(v))
                     {
                         tempConnections.Add(v);
                     }
                 }
-                if(tempConnections.Count > 1)
+                if (tempConnections.Count > 1)
                 {
                     edgedConnections++;
                     connections.Add(A);
@@ -132,7 +133,7 @@ namespace Delaunay
 
             public bool isAroundPolygon(Vector3 A)
             {
-                if(A.x <= greatX && A.x >= leastX && A.z <= greatY && A.z >= leastY)
+                if (A.x <= greatX && A.x >= leastX && A.z <= greatY && A.z >= leastY)
                 {
                     return true;
                 }
@@ -142,7 +143,7 @@ namespace Delaunay
             public bool isInPolygon(Vector3 A)
             {
                 Dictionary<LineSegment, Vector2> intersections = new Dictionary<LineSegment, Vector2>();
-                
+
                 List<Vector2> tempIntersect = new List<Vector2>();
                 //want to get both lines that hav an X at A.y
                 //have to find function of all lines
@@ -174,9 +175,9 @@ namespace Delaunay
                             if (delta != 0)
                             {
                                 Vector2 tempvec = new Vector2((B2 * C1 - B1 * C2) / delta, (A1 * C2 - A2 * C1) / delta);
-                                if(Mathf.Abs(ps1.x) > Mathf.Abs(pe1.x))
+                                if (Mathf.Abs(ps1.x) > Mathf.Abs(pe1.x))
                                 {
-                                    if(Mathf.Abs(tempvec.x) < Mathf.Abs(ps1.x) && Mathf.Abs(tempvec.x) > Mathf.Abs(pe1.x))
+                                    if (Mathf.Abs(tempvec.x) < Mathf.Abs(ps1.x) && Mathf.Abs(tempvec.x) > Mathf.Abs(pe1.x))
                                     {
                                         tempIntersect.Add(tempvec);
                                         intersections.Add(new LineSegment(ps1, pe1), tempvec);
@@ -241,19 +242,19 @@ namespace Delaunay
                         }
                     }
                 }
-                
+
                 //NOW, I HAVE TO MAKE IT SEE IF IT'S COLLIDING ON THE GIVIN LINE
 
                 Vector2? l = null;
                 Vector2? r = null;
-                foreach(KeyValuePair<LineSegment, Vector2> item in intersections)
+                foreach (KeyValuePair<LineSegment, Vector2> item in intersections)
                 {
                     bool inx = false;
                     Vector2 left = (Vector2)item.Key.p0;
                     Vector2 right = (Vector2)item.Key.p1;
-                    if(left.x > right.x)
+                    if (left.x > right.x)
                     {
-                        if(item.Value.x <= left.x && item.Value.x >= right.x)
+                        if (item.Value.x <= left.x && item.Value.x >= right.x)
                         {
                             inx = true;
                         }
@@ -265,24 +266,24 @@ namespace Delaunay
                             inx = true;
                         }
                     }
-                    
+
                     if (inx)
                     {
-                        if(l == null)
+                        if (l == null)
                         {
                             l = item.Value;
                         }
                         else
                         {
-                            if(r == null)
+                            if (r == null)
                             {
                                 r = item.Value;
                             }
-                            
+
                         }
                     }
                 }
-                if(intersections.Count >= 2 && (l != null && r != null))
+                if (intersections.Count >= 2 && (l != null && r != null))
                 {
                     if (l.Value.x < r.Value.x)
                     {
@@ -302,8 +303,27 @@ namespace Delaunay
                 return false;
             }
 
+            public List<LineSegment> getArc()
+            {
+
+                return null;
+            }
+
+            public void setEnabled(bool enabled)
+            {
+                this.enabled = enabled;
+            }
+
+            public bool isEnabled()
+            {
+                return this.enabled;
+            }
+
         }
-	}
+
+        
+
+    }
 }
 /*
 foreach (Vector2 v in tempIntersect)
