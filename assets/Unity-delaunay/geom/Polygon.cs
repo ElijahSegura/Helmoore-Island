@@ -16,10 +16,12 @@ namespace Delaunay
             private List<Polygon> connections = new List<Polygon>();
             private float leastX, leastY, greatX, greatY;
             private bool enabled = false;
+            private float distance = 0f;
+            private float height;
 
             public Polygon(List<Vector2> vertices)
             {
-
+                height = Random.Range(2000, 4000);
 
                 _vertices = vertices;
                 center = Center();
@@ -46,7 +48,31 @@ namespace Delaunay
                         leastY = v.y;
                     }
                 }
+
+                foreach (Vector2 v in vertices)
+                {
+                    if(Vector2.Distance(new Vector2(getCenter().x, getCenter().y), v) > distance)
+                    {
+                        distance = Vector2.Distance(new Vector2(getCenter().x, getCenter().y), v);
+                    }
+                }
+                distance /= 2;
+
             }
+
+            public float getDistance()
+            {
+                return distance;
+            }
+
+            public float getHeight()
+            {
+                return height;
+            }
+
+
+
+
 
             public float Area()
             {
@@ -140,7 +166,7 @@ namespace Delaunay
                 return false;
             }
 
-            public bool isInPolygon(Vector3 A)
+            public bool isInPolygon(Vector3 A, bool draw, float mapWH)
             {
                 Dictionary<LineSegment, Vector2> intersections = new Dictionary<LineSegment, Vector2>();
 
@@ -155,11 +181,55 @@ namespace Delaunay
                 {
                     for (int i = 0; i < temparray.Length; i++)
                     {
-                        if (i + 1 < temparray.Length)
+                        if(i == temparray.Length - 1)
+                        {
+                            Vector2 ps1 = temparray[i];
+                            Vector2 pe1 = temparray[0];
+                            
+                            Vector2 ps2 = new Vector2(-200000, A.z);
+                            Vector2 pe2 = new Vector2(200000, A.z);
+
+                            float A1 = pe1.y - ps1.y;
+                            float B1 = ps1.x - pe1.x;
+                            float C1 = A1 * ps1.x + B1 * ps1.y;
+
+                            float A2 = pe2.y - ps2.y;
+                            float B2 = ps2.x - pe2.x;
+                            float C2 = A2 * ps2.x + B2 * ps2.y;
+
+                            float delta = A1 * B2 - A2 * B1;
+
+
+
+
+
+                            if (delta != 0)
+                            {
+                                Vector2 tempvec = new Vector2((B2 * C1 - B1 * C2) / delta, (A1 * C2 - A2 * C1) / delta);
+                                
+                                if (ps1.x + (mapWH / 2) > pe1.x + (mapWH / 2))
+                                {
+                                    if (tempvec.x + (mapWH / 2) < ps1.x + (mapWH / 2) && tempvec.x + (mapWH / 2) > pe1.x + (mapWH / 2))
+                                    {
+                                        tempIntersect.Add(tempvec);
+                                        intersections.Add(new LineSegment(ps1, pe1), tempvec);
+                                    }
+                                }
+                                else
+                                {
+                                    if (tempvec.x + (mapWH / 2) > ps1.x + (mapWH / 2) && tempvec.x + (mapWH / 2) < pe1.x + (mapWH / 2))
+                                    {
+                                        tempIntersect.Add(tempvec);
+                                        intersections.Add(new LineSegment(ps1, pe1), tempvec);
+                                    }
+                                }
+                            }
+                        }
+                        else
                         {
                             Vector2 ps1 = temparray[i];
                             Vector2 pe1 = temparray[i + 1];
-
+                            
                             Vector2 ps2 = new Vector2(-200000, A.z);
                             Vector2 pe2 = new Vector2(200000, A.z);
 
@@ -175,9 +245,9 @@ namespace Delaunay
                             if (delta != 0)
                             {
                                 Vector2 tempvec = new Vector2((B2 * C1 - B1 * C2) / delta, (A1 * C2 - A2 * C1) / delta);
-                                if (Mathf.Abs(ps1.x) > Mathf.Abs(pe1.x))
+                                if (ps1.x + (mapWH / 2) > pe1.x + (mapWH / 2))
                                 {
-                                    if (Mathf.Abs(tempvec.x) < Mathf.Abs(ps1.x) && Mathf.Abs(tempvec.x) > Mathf.Abs(pe1.x))
+                                    if (tempvec.x + (mapWH / 2) < ps1.x + (mapWH / 2) && tempvec.x + (mapWH / 2) > pe1.x + (mapWH / 2))
                                     {
                                         tempIntersect.Add(tempvec);
                                         intersections.Add(new LineSegment(ps1, pe1), tempvec);
@@ -185,7 +255,7 @@ namespace Delaunay
                                 }
                                 else
                                 {
-                                    if (Mathf.Abs(tempvec.x) > Mathf.Abs(ps1.x) && Mathf.Abs(tempvec.x) < Mathf.Abs(pe1.x))
+                                    if (tempvec.x + (mapWH / 2) > ps1.x + (mapWH / 2) && tempvec.x + (mapWH / 2) < pe1.x + (mapWH / 2))
                                     {
                                         tempIntersect.Add(tempvec);
                                         intersections.Add(new LineSegment(ps1, pe1), tempvec);
@@ -197,51 +267,17 @@ namespace Delaunay
                                 */
                             }
                         }
-                        else if (i + 1 >= temparray.Length)
-                        {
-                            Vector2 ps1 = temparray[0];
-                            Vector2 pe1 = temparray[i];
-
-                            Vector2 ps2 = new Vector2(-200000, A.z);
-                            Vector2 pe2 = new Vector2(200000, A.z);
-
-                            float A1 = pe1.y - ps1.y;
-                            float B1 = ps1.x - pe1.x;
-                            float C1 = A1 * ps1.x + B1 * ps1.y;
-
-                            float A2 = pe2.y - ps2.y;
-                            float B2 = ps2.x - pe2.x;
-                            float C2 = A2 * ps2.x + B2 * ps2.y;
-
-                            float delta = A1 * B2 - A2 * B1;
-
-
-
-
-
-                            if (delta != 0)
-                            {
-                                Vector2 tempvec = new Vector2((B2 * C1 - B1 * C2) / delta, (A1 * C2 - A2 * C1) / delta);
-                                if (Mathf.Abs(ps1.x) > Mathf.Abs(pe1.x))
-                                {
-                                    if (Mathf.Abs(tempvec.x) < Mathf.Abs(ps1.x) && Mathf.Abs(tempvec.x) > Mathf.Abs(pe1.x))
-                                    {
-                                        tempIntersect.Add(tempvec);
-                                        intersections.Add(new LineSegment(ps1, pe1), tempvec);
-                                    }
-                                }
-                                else
-                                {
-                                    if (Mathf.Abs(tempvec.x) > Mathf.Abs(ps1.x) && Mathf.Abs(tempvec.x) < Mathf.Abs(pe1.x))
-                                    {
-                                        tempIntersect.Add(tempvec);
-                                        intersections.Add(new LineSegment(ps1, pe1), tempvec);
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
+
+
+
+
+
+
+
+
+
 
                 //NOW, I HAVE TO MAKE IT SEE IF IT'S COLLIDING ON THE GIVIN LINE
 
@@ -252,6 +288,10 @@ namespace Delaunay
                     bool inx = false;
                     Vector2 left = (Vector2)item.Key.p0;
                     Vector2 right = (Vector2)item.Key.p1;
+                    if(draw)
+                    {
+                        //Debug.DrawLine(new Vector3(left.x, 0, left.y), new Vector3(right.x, 0, right.y));
+                    }
                     if (left.x > right.x)
                     {
                         if (item.Value.x <= left.x && item.Value.x >= right.x)
@@ -303,10 +343,43 @@ namespace Delaunay
                 return false;
             }
 
-            public List<LineSegment> getArc()
+            private float mwh, chunks;
+            public List<LineSegment> getArc(float mapWH, float chunkscale)
             {
+                mwh = mapWH;
+                chunks = chunkscale;
+                List<LineSegment> lines = new List<LineSegment>();
 
-                return null;
+                for (int i = 0; i < _vertices.Count; i++)
+                {
+                    if (i == _vertices.Count - 1)
+                    {
+                        Vector2 left = _vertices[i];
+                        Vector2 right = _vertices[0];
+                        int difference = (int)Vector2.Distance(getXYFromPos(new Vector3(left.x, 0, left.y)), getXYFromPos(new Vector3(right.x, 0, right.y)));
+                        
+
+
+                        for (int c = 0; c < difference; c++)
+                        {
+                            Vector2 end = Vector2.Lerp(left, right, c / (float)difference);
+                            lines.Add(new LineSegment(new Vector2(getCenter().x, getCenter().z), end));
+                        }
+                    }
+                    else
+                    {
+                        Vector2 left = _vertices[i];
+                        Vector2 right = _vertices[i + 1];
+                        int difference = (int)Vector2.Distance(getXYFromPos(new Vector3(left.x, 0, left.y)), getXYFromPos(new Vector3(right.x, 0, right.y)));
+
+                        for (int c = 0; c < difference; c++)
+                        {
+                            Vector2 end = Vector2.Lerp(left, right, c / (float)difference);
+                            lines.Add(new LineSegment(new Vector2(getCenter().x, getCenter().z), end));
+                        }
+                    }
+                }
+                return lines;
             }
 
             public void setEnabled(bool enabled)
@@ -317,6 +390,15 @@ namespace Delaunay
             public bool isEnabled()
             {
                 return this.enabled;
+            }
+
+
+
+            private Vector2 getXYFromPos(Vector3 Pos)
+            {
+                int x = (int)(Mathf.Ceil((Pos.x + (mwh / 2)) / (chunks)));
+                int y = (int)(Mathf.Ceil((Pos.z + (mwh / 2)) / (chunks)));
+                return new Vector2(x, y);
             }
 
         }

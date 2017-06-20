@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/GameMap.unity
+- path: assets/Scenes/GameMap.unity
   isLoaded: 1
   isActive: 1

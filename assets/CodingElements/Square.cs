@@ -67,11 +67,7 @@ public class Square {
     {
         return poly;
     }
-
-    public bool pip(Vector3 P)
-    {
-        return poly.isInPolygon(P);
-    }
+    
 
     public void disable()
     {

@@ -43,7 +43,7 @@ public class MapGen : MonoBehaviour
     private List<Polygon> Definedvm = new List<Polygon>();
 
     private float maxHeight = 4096f;
-
+    
     private int[,] islands;
     private float[,] vertZ;
     private Square[,] Squares;
@@ -84,7 +84,7 @@ public class MapGen : MonoBehaviour
             );
         }
 
-        for (int i = 0; i < 2000; i++)
+        for (int i = 0; i < 3000; i++)
         {
             colors2.Add(0);
             secondaryPoints.Add(new Vector2(
@@ -110,7 +110,7 @@ public class MapGen : MonoBehaviour
                 Vector2 xy = getXYFromPos(new Vector3(vec.x, 0, vec.y));
                 if(pNoise[(int)xy.x,(int)xy.y] > 0.2)
                 {
-                    if(Vector3.Distance(Vector3.zero, new Vector3(vec.x, 0, vec.y)) < (mapWH / 3.5))
+                    if(Vector3.Distance(Vector3.zero, new Vector3(vec.x, 0, vec.y)) < (mapWH / 2) * 0.78f)
                     {
                         Map.Add(p);
                         break;
@@ -153,7 +153,7 @@ public class MapGen : MonoBehaviour
                     {
                         if (p.isAroundPolygon(tempV))
                         {
-                            if (p.isInPolygon(tempV))
+                            if (p.isInPolygon(tempV, false, mapWH))
                             {
                                 Definedvm.Add(p2);
                                 b = true;
@@ -186,12 +186,14 @@ public class MapGen : MonoBehaviour
         xvertZ = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         islands = new int[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         genHeights(Definedvm);
+        smooth(36);
+        modifyMesh();
         //genHeights(TestMap);
-        smooth();
+        //
         //detectIslands();
         //genRivers();
         //genBiomes();
-        //modifyMesh();
+        
         genSquares();
         //genTexture();
         //genHeightTex();
@@ -533,7 +535,6 @@ public class MapGen : MonoBehaviour
             foreach (List<Vector2> R in TecPlates.Regions())
             {
                 Polygon p = new Polygon(R);
-                Gizmos.DrawSphere(p.getCenter(), 200f); 
                 for (int i = 0; i < R.Count; i++)
                 {
                     if (i == R.Count - 1)
@@ -814,9 +815,9 @@ public class MapGen : MonoBehaviour
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// </summary>
 
-    public void smooth()
+    public void smooth(int iteration)
     {
-        for (int i = 0; i < 60; i++)
+        for (int i = 0; i < iteration; i++)
         {
             for (int x = 0; x <= chunkSize * mapSize; x++)
             {
@@ -879,35 +880,14 @@ public class MapGen : MonoBehaviour
     //might not need
     private void modifyMesh()
     {
-        Vector3 origin = new Vector3(Random.Range(-mapWH / 2f, mapWH / 2f), 0, Random.Range(-mapWH / 2f, mapWH / 2f)) * 2;
-        Vector3 modifier = new Vector3(Random.Range(-mapWH / 2f, mapWH / 2f), 0, Random.Range(-mapWH / 2f, mapWH / 2f)) * 2;
-        float sandDuneDistance = Random.Range(1000f, 1500f);
-        float modDuneDistance = Random.Range(500f, 800f);
-
+        //vertZ[x,y] modified by each center polygon based off of distance.
         for (int x = 0; x <= chunkSize * mapSize; x++)
         {
-            origin = new Vector3(Random.Range(-mapWH / 2f, mapWH / 2f), 0, Random.Range(-mapWH / 2f, mapWH / 2f));
-            modifier = new Vector3(Random.Range(-mapWH / 2f, mapWH / 2f), 0, Random.Range(-mapWH / 2f, mapWH / 2f));
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                if (biome[x + 1, y] == 1 && biome[x - 1, y] == 1 && biome[x, y + 1] == 1 && biome[x, y - 1] == 1)
+                if(vertZ[x,y] > 0)
                 {
-                    if (biome[x, y] == 1 && islands[x, y] > 0)
-                    {
-                        Vector3 pos = getPos(x, y);
-                        float distance = Vector3.Distance(origin, getPos(x, y));
-                        float mod = distance % sandDuneDistance;
-                        //absolute value devided by sanddunedistance
-                        float p = Mathf.Abs(mod) / sandDuneDistance;
-
-
-                        float modDistance = Vector3.Distance(modifier, getPos(x, y));
-                        float modMod = modDistance % modDuneDistance;
-                        float modP = Mathf.Abs(modMod) / modDuneDistance;
-
-                        vertZ[x, y] += 150 * (Mathf.PerlinNoise(pos.x / 8000, pos.y / 8000) * (DesertCurve.Evaluate(p) * (vertZ[x, y] / islandHeights[islands[x, y]])));
-                        vertZ[x, y] += 150 * (Mathf.PerlinNoise(pos.x / 8000, pos.y / 8000) * (DesertCurve.Evaluate(modP) * (vertZ[x, y] / islandHeights[islands[x, y]])));
-                    }
+                    vertZ[x, y] = maxHeight * pNoise[x, y];
                 }
             }
         }
@@ -926,21 +906,14 @@ public class MapGen : MonoBehaviour
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
                 Vector3 temp = getPos(x, y);
-                foreach (Polygon p in map)
+                foreach (Polygon p in Definedvm)
                 {
                     if (p.isAroundPolygon(temp))
                     {
-                        if (p.isInPolygon(temp))
+                        if (p.isInPolygon(temp, true, mapWH))
                         {
                             vertZ[x, y] = 1;
                         }
-                    }
-                }
-                foreach (Polygon p in tectonicPlates)
-                {
-                    if (p.isInPolygon(temp))
-                    {
-                        p.setEnabled(true);
                     }
                 }
             }
@@ -953,18 +926,119 @@ public class MapGen : MonoBehaviour
                 if (vertZ[x, y] == 0)
                 {
                     vertZ[x, y] = -15;
+                    pNoise[x, y] *= 0;
                 }
             }
         }
 
-        for (int i = 0; i < tectonicPlates.Count; i++)
+
+        
+
+
+        float maxP = 0;
+        for (int x = 0; x <= chunkSize * mapSize; x++)
         {
-            if(!tectonicPlates[i].isEnabled())
+            for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                tectonicPlates.Remove(tectonicPlates[i]);
+                pNoise[x, y] -= 0.2f;
+                if(pNoise[x,y] < 0)
+                {
+                    pNoise[x, y] = 0f;
+                }
+                if(pNoise[x,y] > maxP)
+                {
+                    maxP = pNoise[x, y];
+                }
+
             }
         }
+
+        for (int x = 0; x <= chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                pNoise[x, y] /= maxP;
+            }
+        }
+        redTP();
     }
+
+
+    /*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+        //for each arc line
+        foreach (List<Vector2> t in TecPlates.Regions())
+        {
+            Polygon p = new Polygon(t);
+            foreach (LineSegment l in p.getArc(mapWH, chunkscale))
+            {
+                Vector3 left = new Vector3(l.p0.Value.x, 0, l.p0.Value.y);
+                Vector3 right = new Vector3(l.p1.Value.x, 0, l.p1.Value.y);
+                int difference = (int)Vector2.Distance(getXYFromPos(new Vector3(left.x, 0, left.z)), getXYFromPos(new Vector3(right.x, 0, right.z)));
+                float height = 0f;
+
+                Vector2 s = getXYFromPos(right);
+                for (int c = 0; c < difference; c++)
+                {
+                    Vector2 test = getXYFromPos(Vector3.Lerp(left, right, c / (float)difference));
+                    if (vertZ[(int)test.x, (int)test.y] > 0)
+                    {
+                        height++;
+                        vertZ[(int)test.x, (int)test.y] += height;
+                    }
+                    else
+                    {
+                        for (int i = 0; i <= height / 2; i++)
+                        {
+                            Vector2 test2 = getXYFromPos(Vector3.Lerp(left, right, (c - i) / (float)difference));
+                            vertZ[(int)test2.x, (int)test2.y] -= ((height / 2) - i);
+                        }
+                        height = 0;
+                    }
+                }
+            }
+        }
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        */
 
     /// <summary>
     /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1038,7 +1112,20 @@ public class MapGen : MonoBehaviour
         Materials[0].mainTexture = texture;
     }
 
+    void redTP()
+    {
+        Texture2D texture = new Texture2D(chunkSize * mapSize, chunkSize * mapSize);
+        for (int x = 0; x <= chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                texture.SetPixel(x, y, Color.Lerp(Color.black, Color.white, pNoise[x, y]));
+            }
+        }
 
+        texture.Apply();
+        Materials[0].mainTexture = texture;
+    }
 
 
     void genPTex()
@@ -1062,9 +1149,7 @@ public class MapGen : MonoBehaviour
 
 
 
-
-
-
+        float l = 1f;
         float m = 0f;
         for (int x = 0; x <= chunkSize * mapSize; x++)
         {
@@ -1077,35 +1162,21 @@ public class MapGen : MonoBehaviour
             }
         }
 
-        m = 1f / m;
-        float low = 2f;
-        float high = 4f;
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                pNoise[x, y] *= m;
-                if(pNoise[x,y] < 0.5f)
-                {
-                    pNoise[x,y] *= low;
-                }
-                else
-                {
-                    pNoise[x, y] = (1 + (pNoise[x, y] - 0.5f) * high);
-                }
-                pNoise[x, y] /= 3f;
-            }
-        }
-
+        l = 1f - m;
 
         for (int x = 0; x <= chunkSize * mapSize; x++)
         {
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                Vector3 t = getPos(x,y);
-                pNoise[x, y] *= 1f - (Vector3.Distance(Vector3.zero, t) / (mapWH / 1.5f));  
+                pNoise[x, y] += l;
+                if(pNoise[x,y] < 0.2)
+                {
+                    pNoise[x, y] = 0f;
+                }
             }
         }
+
+
 
 
 
@@ -1125,7 +1196,7 @@ public class MapGen : MonoBehaviour
     private List<Vector2> plates = new List<Vector2>();
 
     Voronoi TecPlates;
-    List<Polygon> tectonicPlates = new List<Polygon>();
+    private List<Polygon> tecplates = new List<Polygon>();
 
     void genPlates()
     {
@@ -1142,9 +1213,9 @@ public class MapGen : MonoBehaviour
 
 
         TecPlates = new Voronoi(plates, c, new Rect(-mapWH / 2, -mapWH / 2, mapWH, mapWH));
-        foreach (List<Vector2> i in TecPlates.Regions())
+        foreach (List<Vector2> l in TecPlates.Regions())
         {
-            tectonicPlates.Add(new Polygon(i));
+            tecplates.Add(new Polygon(l));
         }
     }
 
