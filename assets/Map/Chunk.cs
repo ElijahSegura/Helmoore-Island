@@ -10,10 +10,8 @@ public class Chunk {
     private List<int> temp = new List<int>();
     private Mesh mesh = new Mesh();
     private bool flat = true;
-    public int posx;
-    public int posy;
-
-    public Chunk(int chunkSize, int mapsize, int posx, int posy, float chunkScale, float[,] vertZ, List<PerlinForms> rivers, Square[,] Squares)
+    
+    public Chunk(int chunkSize, int mapsize, int posx, int posy, float chunkScale, float[,] vertZ, Square[,] Squares)
     {
         this.posx = posx;
         this.posy = posy;
