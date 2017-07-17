@@ -9,6 +9,8 @@ using System.Runtime.InteropServices;
 
 public class MapGen : MonoBehaviour
 {
+    public List<Chunk> sharableChunks;
+    
     [SerializeField]
     private int
         m_pointCount = 380;
@@ -20,9 +22,9 @@ public class MapGen : MonoBehaviour
     private Color[] biomes = new Color[] { Color.blue, Color.yellow, Color.green, new Color(Color.green.r / 2, Color.green.g / 2, Color.green.b / 2), Color.red + Color.blue, Color.white };
     private Chunk[,] chunkMap;
     private int mapSize = 60;
-    private int chunkSize = 20; //max size for chunksize is 250, 251 is over the mesh vertex limit
+    public int chunkSize = 20; //max size for chunksize is 250, 251 is over the mesh vertex limit
     private float it;
-    private float chunkscale;
+    public float chunkscale;
     private int rivers;
     private Vector2 proxyEquator;
     private int[,] biome;
@@ -32,7 +34,7 @@ public class MapGen : MonoBehaviour
     private List<Polygon> Map = new List<Polygon>();
     private List<Polygon> VoronoiMap = new List<Polygon>();
     private List<Vector2> m_points;
-    private float mapWH = 50000;
+    public float mapWH = 50000;
     private float scale = 4.0F;
     private float xOffset, yOffset;
     private float biomeDistance = 0f;
@@ -49,7 +51,7 @@ public class MapGen : MonoBehaviour
     private Square[,] Squares;
     private float[,] xvertZ;
     private float[,] pNoise;
-    void Start()
+    public void StartMapGen()
     {
         pNoise = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         xOffset = Random.Range(0f, 2000000f);
@@ -203,28 +205,29 @@ public class MapGen : MonoBehaviour
     /// <summary>
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// </summary>
-
     public void loadChunks()
     {
+        sharableChunks = new List<Chunk>();
         chunkMap = new Chunk[mapSize, mapSize];
         for (int x = 0; x < mapSize; x++)
         {
             for (int y = 0; y < mapSize; y++)
             {
                 Chunk c = new Chunk(chunkSize, mapSize, x, y, chunkscale, vertZ, riverForms, Squares);
-                if (!c.isflat())
-                {
-                    GameObject temp = new GameObject("Chunk: " + x + ":" + y);
-                    temp.AddComponent<MeshRenderer>();
-                    temp.GetComponent<MeshRenderer>().receiveShadows = true;
-                    temp.AddComponent<MeshFilter>();
-                    temp.GetComponent<MeshFilter>().mesh = c.getMesh();
-                    temp.AddComponent<MeshCollider>();
-                    temp.GetComponent<MeshCollider>().sharedMesh = c.getMesh();
-                    temp.GetComponent<MeshFilter>().mesh.RecalculateNormals();
-                    temp.GetComponent<MeshRenderer>().material = Materials[0];
-                    temp.transform.position = new Vector3(((x * (chunkSize * chunkscale)) - (mapWH / 2)), 0, ((y * (chunkSize * chunkscale)) - (mapWH / 2)));
-                }
+                sharableChunks.Add(c);
+                //if (!c.isflat())
+                //{
+                //    GameObject temp = new GameObject("Chunk: " + x + ":" + y);
+                //    temp.AddComponent<MeshRenderer>();
+                //    temp.GetComponent<MeshRenderer>().receiveShadows = true;
+                //    temp.AddComponent<MeshFilter>();
+                //    temp.GetComponent<MeshFilter>().mesh = c.getMesh();
+                //    temp.AddComponent<MeshCollider>();
+                //    temp.GetComponent<MeshCollider>().sharedMesh = c.getMesh();
+                //    temp.GetComponent<MeshFilter>().mesh.RecalculateNormals();
+                //    temp.GetComponent<MeshRenderer>().material = Materials[0];
+                //    temp.transform.position = new Vector3(((x * (chunkSize * chunkscale)) - (mapWH / 2)), 0, ((y * (chunkSize * chunkscale)) - (mapWH / 2)));
+                //}
             }
 
         }
