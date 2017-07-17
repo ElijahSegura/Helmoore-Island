@@ -11,7 +11,7 @@ public class Chunk {
     private Mesh mesh = new Mesh();
     private bool flat = true;
     
-    public Chunk(int chunkSize, int mapsize, int posx, int posy, float chunkScale, float[,] vertZ, List<PerlinForms> rivers, Square[,] Squares)
+    public Chunk(int chunkSize, int mapsize, int posx, int posy, float chunkScale, float[,] vertZ, Square[,] Squares)
     {
         float tX;
         float tY;

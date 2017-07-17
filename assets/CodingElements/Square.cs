@@ -27,6 +27,23 @@ public class Square {
         }
     }
 
+
+
+    public Square(Vector3[] p, int[] i)
+    {
+        List<Vector2> ts = new List<Vector2>();
+        foreach (Vector3 t in p)
+        {
+            ts.Add(new Vector2(t.x, t.z));
+        }
+        poly = new Polygon(ts);
+        points = p;
+        t1 = new Triangle(new Vector3[] { p[0], p[1], p[2] }, new int[] { i[0], i[1], i[2] });
+        t2 = new Triangle(new Vector3[] { p[2], p[1], p[3] }, new int[] { i[2], i[1], i[3] });
+    }
+
+
+
     public Square(float biomeN)
     {
         if (biomeN == 1f)

@@ -19,8 +19,8 @@ public class MapGen : MonoBehaviour
     //blue is ocean, yellow is desert, green is plains, dark green is forest, purple is swamp
     private Color[] biomes = new Color[] { Color.blue, Color.yellow, Color.green, new Color(Color.green.r / 2, Color.green.g / 2, Color.green.b / 2), Color.red + Color.blue, Color.white };
     private Chunk[,] chunkMap;
-    private int mapSize = 60;
-    private int chunkSize = 20; //max size for chunksize is 250, 251 is over the mesh vertex limit
+    private int mapSize = 32;
+    private int chunkSize = 32; //max size for chunksize is 250, 251 is over the mesh vertex limit
     private float it;
     private float chunkscale;
     private int rivers;
@@ -34,7 +34,7 @@ public class MapGen : MonoBehaviour
     private List<Vector2> m_points;
     private float mapWH = 50000;
     private float scale = 4.0F;
-    private float xOffset, yOffset;
+    private int xOffset, yOffset;
     private float biomeDistance = 0f;
 
     private List<Vector2> riverEnds = new List<Vector2>();
@@ -49,12 +49,19 @@ public class MapGen : MonoBehaviour
     private Square[,] Squares;
     private float[,] xvertZ;
     private float[,] pNoise;
-    void Start()
+    public void run(int seedx, int seedy)
     {
+        if (seedx >= 0 && seedy >= 0)
+        {
+            xOffset = seedx;
+            yOffset = seedy;
+        }
+        else
+        {
+            xOffset = Random.Range(0, 2000000);
+            yOffset = Random.Range(0, 2000000);
+        }
         pNoise = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
-        xOffset = Random.Range(0f, 2000000f);
-        yOffset = Random.Range(0f, 2000000f);
-        genPlates();
         mapV v = new mapV();
         
         proxyEquator = new Vector2(Random.Range(-(mapWH / 3), mapWH / 3), Random.Range(-(mapWH / 3), mapWH / 3));
@@ -66,6 +73,11 @@ public class MapGen : MonoBehaviour
         genPTex();
         Demo();
         load();
+    }
+
+    public string getSeed()
+    {
+        return xOffset + "," + yOffset;
     }
 
     private void Demo()
@@ -84,7 +96,7 @@ public class MapGen : MonoBehaviour
             );
         }
 
-        for (int i = 0; i < 3000; i++)
+        for (int i = 0; i < 750; i++)
         {
             colors2.Add(0);
             secondaryPoints.Add(new Vector2(
@@ -146,31 +158,34 @@ public class MapGen : MonoBehaviour
             {
                 Polygon p2 = new Polygon(l);
                 bool b = false;
-                foreach (Vector2 VP in p2.points())
+                if(p.isInPolygon(p2.getCenter(), mapWH))
                 {
-                    Vector3 tempV = new Vector3(VP.x, 0, VP.y);
-                    if (!b)
+                    Definedvm.Add(p2);
+                }
+                else
+                {
+                    foreach (Vector2 VP in p2.points())
                     {
-                        if (p.isAroundPolygon(tempV))
+                        Vector3 tempV = new Vector3(VP.x, 0, VP.y);
+                        if (!b)
                         {
-                            if (p.isInPolygon(tempV, false, mapWH))
+                            if (p.isAroundPolygon(tempV))
                             {
-                                Definedvm.Add(p2);
-                                b = true;
+                                if (p.isInPolygon(tempV, mapWH))
+                                {
+                                    Definedvm.Add(p2);
+                                    b = true;
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        break;
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
             }
         }
-
-
-        
-
     }
     List<Vector2> points = new List<Vector2>();
     /// <summary>
@@ -186,23 +201,30 @@ public class MapGen : MonoBehaviour
         xvertZ = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         islands = new int[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         genHeights(Definedvm);
-        smooth(36);
+        smooth(5, vertZ);
+        smooth(120, vnoise);
         modifyMesh();
-        //genHeights(TestMap);
         //
-        //detectIslands();
+        genMoisture();
+        moistureTex();
+        detectIslands();
         //genRivers();
         //genBiomes();
-        
+
         genSquares();
         //genTexture();
         //genHeightTex();
-        loadChunks();
+        //loadChunks();
     }
 
     /// <summary>
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// </summary>
+
+    public float getChunkScale()
+    {
+        return chunkscale;
+    }
 
     public void loadChunks()
     {
@@ -211,7 +233,7 @@ public class MapGen : MonoBehaviour
         {
             for (int y = 0; y < mapSize; y++)
             {
-                Chunk c = new Chunk(chunkSize, mapSize, x, y, chunkscale, vertZ, riverForms, Squares);
+                Chunk c = new Chunk(chunkSize, mapSize, x, y, chunkscale, vertZ, Squares);
                 if (!c.isflat())
                 {
                     GameObject temp = new GameObject("Chunk: " + x + ":" + y);
@@ -234,6 +256,10 @@ public class MapGen : MonoBehaviour
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// </summary>
 
+    public Square[,] getSquares()
+    {
+        return Squares;
+    }
 
     void genBiomes()
     {
@@ -530,32 +556,6 @@ public class MapGen : MonoBehaviour
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        if(TecPlates != null)
-        {
-            foreach (List<Vector2> R in TecPlates.Regions())
-            {
-                Polygon p = new Polygon(R);
-                for (int i = 0; i < R.Count; i++)
-                {
-                    if (i == R.Count - 1)
-                    {
-                        Vector3 l = new Vector3(R[0].x, 0, R[0].y);
-                        Vector3 r = new Vector3(R[i].x, 0, R[i].y);
-                        Gizmos.DrawLine(l, r);
-                    }
-                    else
-                    {
-                        Vector3 l = new Vector3(R[i + 1].x, 0, R[i + 1].y);
-                        Vector3 r = new Vector3(R[i].x, 0, R[i].y);
-                        Gizmos.DrawLine(l, r);
-                    }
-                }
-            }
-        }
-        
-        
-
-
     }
 
     int island = 0;
@@ -733,7 +733,6 @@ public class MapGen : MonoBehaviour
     Dictionary<int, float> islandHeights = new Dictionary<int, float>();
     void detectIslands()
     {
-        float islandMinHeight = 600f;
         Debug.Log("Starting Islands");
 
         for (int x = 0; x < chunkSize * mapSize; x++)
@@ -769,17 +768,7 @@ public class MapGen : MonoBehaviour
                 }
             }
         }
-        Dictionary<int, AnimationCurve> usedCurves = new Dictionary<int, AnimationCurve>();
-        for (int i = 0; i < island; i++)
-        {
-            if (islandHeights[i + 1] > islandMinHeight)
-            {
-                int r = Random.Range(0, 2);
-                usedCurves.Add(i + 1, c[r]);
-            }
-        }
-
-
+        
         for (int x = 0; x <= chunkSize * mapSize; x++)
         {
             for (int y = 0; y <= chunkSize * mapSize; y++)
@@ -788,14 +777,7 @@ public class MapGen : MonoBehaviour
                 {
                     if (vertZ[x, y] > 0)
                     {
-                        if (islandHeights[islands[x, y]] > islandMinHeight)
-                        {
-                            vertZ[x, y] *= usedCurves[islands[x, y]].Evaluate(vertZ[x, y] / islandHeights[islands[x, y]]);
-                        }
-                        else
-                        {
-                            vertZ[x, y] *= c[c.Count - 1].Evaluate(vertZ[x, y] / islandHeights[islands[x, y]]);
-                        }
+                        vertZ[x, y] *= c[0].Evaluate(vertZ[x, y] / islandHeights[islands[x, y]]);
                     }
                 }
             }
@@ -815,62 +797,54 @@ public class MapGen : MonoBehaviour
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// </summary>
 
-    public void smooth(int iteration)
+    public void smooth(int iteration, float[,] array)
     {
-        for (int i = 0; i < iteration; i++)
-        {
-            for (int x = 0; x <= chunkSize * mapSize; x++)
+  
+        
+            for (int i = 0; i < iteration; i++)
             {
-                for (int y = 0; y <= chunkSize * mapSize; y++)
+                for (int x = 0; x <= chunkSize * mapSize; x++)
                 {
-                    if ((chunkSize * mapSize) - y > 0)
+                    for (int y = 0; y <= chunkSize * mapSize; y++)
                     {
-                        vertZ[x, (chunkSize * mapSize) - y] = Mathf.Lerp(vertZ[x, (chunkSize * mapSize) - y], vertZ[x, ((chunkSize * mapSize) - y) - 1], Random.Range(0.4f, 0.6f));
+                        if ((chunkSize * mapSize) - y > 0)
+                        {
+                            array[x, (chunkSize * mapSize) - y] = Mathf.Lerp(array[x, (chunkSize * mapSize) - y], array[x, ((chunkSize * mapSize) - y) - 1], Random.Range(0.4f, 0.6f));
+                        }
                     }
                 }
-            }
 
-            for (int x = 0; x <= chunkSize * mapSize; x++)
-            {
-                for (int y = 0; y <= chunkSize * mapSize; y++)
+                for (int x = 0; x <= chunkSize * mapSize; x++)
                 {
-                    if ((chunkSize * mapSize) - y > 0)
+                    for (int y = 0; y <= chunkSize * mapSize; y++)
                     {
-                        vertZ[(chunkSize * mapSize) - y, x] = Mathf.Lerp(vertZ[(chunkSize * mapSize) - y, x], vertZ[((chunkSize * mapSize) - y) - 1, x], Random.Range(0.4f, 0.6f));
+                        if ((chunkSize * mapSize) - y > 0)
+                        {
+                            array[(chunkSize * mapSize) - y, x] = Mathf.Lerp(array[(chunkSize * mapSize) - y, x], array[((chunkSize * mapSize) - y) - 1, x], Random.Range(0.4f, 0.6f));
+                        }
+                    }
+                }
+                for (int x = 0; x <= chunkSize * mapSize; x++)
+                {
+                    for (int y = 0; y <= chunkSize * mapSize; y++)
+                    {
+                        if (y + 1 < chunkSize * mapSize)
+                        {
+                            array[x, y] = Mathf.Lerp(array[x, y], array[x, y + 1], Random.Range(0.4f, 0.6f));
+                        }
+                    }
+                }
+                for (int x = 0; x <= chunkSize * mapSize; x++)
+                {
+                    for (int y = 0; y <= chunkSize * mapSize; y++)
+                    {
+                        if (y + 1 < chunkSize * mapSize)
+                        {
+                            array[y, x] = Mathf.Lerp(array[y, x], array[y + 1, x], Random.Range(0.4f, 0.6f));
+                        }
                     }
                 }
             }
-            for (int x = 0; x <= chunkSize * mapSize; x++)
-            {
-                for (int y = 0; y <= chunkSize * mapSize; y++)
-                {
-                    if (y + 1 < chunkSize * mapSize)
-                    {
-                        vertZ[x, y] = Mathf.Lerp(vertZ[x, y], vertZ[x, y + 1], Random.Range(0.4f, 0.6f));
-                    }
-                }
-            }
-            for (int x = 0; x <= chunkSize * mapSize; x++)
-            {
-                for (int y = 0; y <= chunkSize * mapSize; y++)
-                {
-                    if (y + 1 < chunkSize * mapSize)
-                    {
-                        vertZ[y, x] = Mathf.Lerp(vertZ[y, x], vertZ[y + 1, x], Random.Range(0.4f, 0.6f));
-                    }
-                }
-            }
-        }
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                if(vertZ[x,y] > 0)
-                {
-                    vertZ[x, y] *= pNoise[x, y];
-                }
-            }
-        }
     }
 
     /// <summary>
@@ -881,13 +855,44 @@ public class MapGen : MonoBehaviour
     private void modifyMesh()
     {
         //vertZ[x,y] modified by each center polygon based off of distance.
+        float max = 0f;
+        float least = 1f;
         for (int x = 0; x <= chunkSize * mapSize; x++)
         {
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                if(vertZ[x,y] > 0)
+                if (pNoise[x, y] == 0)
                 {
-                    vertZ[x, y] = maxHeight * pNoise[x, y];
+                    vnoise[x, y] = 0f;
+                }
+                if (vnoise[x, y] > max) {
+                    max = vnoise[x, y];
+                }
+                if (vnoise[x, y] < least && pNoise[x,y] > 0)
+                {
+                    least = vnoise[x, y];
+                }
+            }
+        }
+        
+        for (int x = 0; x <= chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                vnoise[x, y] /= max;
+            }
+        }
+
+
+
+
+        for (int x = 0; x <= chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                if(pNoise[x,y] > 0)
+                {
+                    vertZ[x, y] = (maxHeight * (pNoise[x, y] * vnoise[x, y]));
                 }
             }
         }
@@ -897,10 +902,85 @@ public class MapGen : MonoBehaviour
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// </summary>
 
+        
+    private float[,] moisture;
+    private void genMoisture()
+    {
+        moisture = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
+        int fx, fy;
+        fx = Random.Range(0, 2000000);
+        fy = Random.Range(0, 2000000);
 
-    //redo this to tectonic plates
+
+
+        for (int i = 0; i < 10; i++)
+        {
+            float temp = (1024 / Mathf.Pow(2, i - 1)) * 15;
+            float s = Mathf.Pow(2, i - 1) * 2.0f;
+            for (int x = 0; x <= chunkSize * mapSize; x++)
+            {
+                for (int y = 0; y <= chunkSize * mapSize; y++)
+                {
+                    moisture[x, y] += Mathf.PerlinNoise((getPos(x, y).x + fx) / temp, (getPos(x, y).z + fy) / temp) / s;
+                }
+            }
+        }
+
+
+
+
+
+        float m = 0f;
+        for (int x = 0; x <= chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                if (moisture[x, y] > m)
+                {
+                    m = moisture[x, y];
+                }
+            }
+        }
+        
+        for (int x = 0; x <= chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                moisture[x, y] /= m;
+            }
+        }
+
+        float l = 1f;
+        m = 0f;
+        for (int x = 0; x <= chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                if(moisture[x,y] < l)
+                {
+                    l = moisture[x, y];
+                }
+                if(moisture[x,y] > m)
+                {
+                    m = moisture[x, y];
+                }
+            }
+        }
+
+        for (int x = 0; x <= chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                moisture[x, y] = Mathf.InverseLerp(l, m, moisture[x,y]);
+            }
+        }
+
+    }
+
+    float[,] vnoise;
     private void genHeights(List<Polygon> map)
     {
+        vnoise = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         for (int x = 0; x <= chunkSize * mapSize; x++)
         {
             for (int y = 0; y <= chunkSize * mapSize; y++)
@@ -910,7 +990,7 @@ public class MapGen : MonoBehaviour
                 {
                     if (p.isAroundPolygon(temp))
                     {
-                        if (p.isInPolygon(temp, true, mapWH))
+                        if (p.isInPolygon(temp, mapWH))
                         {
                             vertZ[x, y] = 1;
                         }
@@ -930,37 +1010,142 @@ public class MapGen : MonoBehaviour
                 }
             }
         }
+        int iter = 1;
+
+        bool modified = false;
+        while (!modified)
+        {
+            modified = true;
+            for (int x = 0; x <= chunkSize * mapSize; x++)
+            {
+                for (int y = 0; y <= chunkSize * mapSize; y++)
+                {
+                    if (vertZ[x, y] != -15)
+                    {
+                        modified = false;
+                    }
+                }
+            }
+            float[,] temp = (float[,])vertZ.Clone();
+            bool fliy1 = false, fliy2 = false, flix1 = false, flix2 = false;
 
 
+
+            for (int x = 0; x <= chunkSize * mapSize; x++)
+            {
+                for (int y = 0; y <= chunkSize * mapSize; y++)
+                {
+                    if (!fliy1)
+                    {
+                        if (temp[x, y] > 0)
+                        {
+                            fliy1 = true;
+                            vnoise[x, y] = iter;
+                            vertZ[x, y] = -15;
+                        }
+                    }
+                    else
+                    {
+                        if (temp[x, y] <= 0)
+                        {
+                            fliy1 = false;
+                            vnoise[x, y - 1] = iter;
+                            vertZ[x, y - 1] = -15;
+                        }
+                    }
+                }
+            }
+
+
+
+
+            for (int x = 0; x <= chunkSize * mapSize; x++)
+            {
+                for (int y = 0; y <= chunkSize * mapSize; y++)
+                {
+                    if (!flix1)
+                    {
+                        if (temp[y, x] > 0)
+                        {
+                            flix1 = true;
+                            vnoise[y, x] = iter;
+                            vertZ[y, x] = -15;
+                        }
+                    }
+                    else
+                    {
+                        if (temp[y, x] <= 0)
+                        {
+                            flix1 = false;
+                            vnoise[y, x] = iter;
+                            vertZ[y, x] = -15;
+                        }
+                    }
+                }
+            }
+
+            for (int x = 0; x <= chunkSize * mapSize; x++)
+            {
+                for (int y = 0; y <= chunkSize * mapSize; y++)
+                {
+                    if (!fliy2)
+                    {
+                        if (temp[x, (chunkSize * mapSize) - y] > 0)
+                        {
+                            fliy2 = true;
+                            vnoise[x, (chunkSize * mapSize) - y] = iter;
+                            vertZ[x, (chunkSize * mapSize) - y] = -15;
+                        }
+                    }
+                    else
+                    {
+                        if (temp[x, (chunkSize * mapSize) - y] <= 0)
+                        {
+                            fliy2 = false;
+                            vnoise[x, (chunkSize * mapSize) - (y + 1)] = iter;
+                            vertZ[x, (chunkSize * mapSize) - (y + 1)] = -15;
+                        }
+                    }
+                }
+            }
+            
+            for (int x = 0; x <= chunkSize * mapSize; x++)
+            {
+                for (int y = 0; y <= chunkSize * mapSize; y++)
+                {
+                    if (!flix2)
+                    {
+                        if (temp[(chunkSize * mapSize) - y, x] > 0)
+                        {
+                            flix2 = true;
+                            vnoise[(chunkSize * mapSize) - y, x] = iter;
+                            vertZ[(chunkSize * mapSize) - y, x] = -15;
+                        }
+                    }
+                    else
+                    {
+                        if (temp[(chunkSize * mapSize) - y, x] <= 0 && ((chunkSize * mapSize) - (y + 1) > 0))
+                        {
+                            flix2 = false;
+                            vnoise[(chunkSize * mapSize) - (y + 1), x] = iter;
+                            vertZ[(chunkSize * mapSize) - (y + 1), x] = -15;
+                        }
+                    }
+                }
+            }
+            iter++;
+        }
+
+
+
+        for (int x = 0; x <= chunkSize * mapSize; x++)
+        {
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                vnoise[x, y] /= (float)iter;
+            }
+        }
         
-
-
-        float maxP = 0;
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                pNoise[x, y] -= 0.2f;
-                if(pNoise[x,y] < 0)
-                {
-                    pNoise[x, y] = 0f;
-                }
-                if(pNoise[x,y] > maxP)
-                {
-                    maxP = pNoise[x, y];
-                }
-
-            }
-        }
-
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                pNoise[x, y] /= maxP;
-            }
-        }
-        redTP();
     }
 
 
@@ -978,45 +1163,7 @@ public class MapGen : MonoBehaviour
 
 
 
-
-
         
-
-        //for each arc line
-        foreach (List<Vector2> t in TecPlates.Regions())
-        {
-            Polygon p = new Polygon(t);
-            foreach (LineSegment l in p.getArc(mapWH, chunkscale))
-            {
-                Vector3 left = new Vector3(l.p0.Value.x, 0, l.p0.Value.y);
-                Vector3 right = new Vector3(l.p1.Value.x, 0, l.p1.Value.y);
-                int difference = (int)Vector2.Distance(getXYFromPos(new Vector3(left.x, 0, left.z)), getXYFromPos(new Vector3(right.x, 0, right.z)));
-                float height = 0f;
-
-                Vector2 s = getXYFromPos(right);
-                for (int c = 0; c < difference; c++)
-                {
-                    Vector2 test = getXYFromPos(Vector3.Lerp(left, right, c / (float)difference));
-                    if (vertZ[(int)test.x, (int)test.y] > 0)
-                    {
-                        height++;
-                        vertZ[(int)test.x, (int)test.y] += height;
-                    }
-                    else
-                    {
-                        for (int i = 0; i <= height / 2; i++)
-                        {
-                            Vector2 test2 = getXYFromPos(Vector3.Lerp(left, right, (c - i) / (float)difference));
-                            vertZ[(int)test2.x, (int)test2.y] -= ((height / 2) - i);
-                        }
-                        height = 0;
-                    }
-                }
-            }
-        }
-
-        
-
 
 
 
@@ -1089,23 +1236,13 @@ public class MapGen : MonoBehaviour
 
     void genHeightTex()
     {
-        float max = 0f;
         Texture2D texture = new Texture2D(chunkSize * mapSize, chunkSize * mapSize);
+
         for (int x = 0; x <= chunkSize * mapSize; x++)
         {
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                if (vertZ[x, y] > max)
-                {
-                    max = vertZ[x, y];
-                }
-            }
-        }
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                texture.SetPixel(x, y, Color.Lerp(Color.black, Color.white, vertZ[x, y] / max));
+                texture.SetPixel(x, y, Color.Lerp(Color.black, Color.white, pNoise[x, y]));
             }
         }
         texture.Apply();
@@ -1119,7 +1256,7 @@ public class MapGen : MonoBehaviour
         {
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                texture.SetPixel(x, y, Color.Lerp(Color.black, Color.white, pNoise[x, y]));
+                texture.SetPixel(x, y, Color.Lerp(Color.black, Color.white, pNoise[x,y] * vnoise[x, y]));
             }
         }
 
@@ -1149,7 +1286,7 @@ public class MapGen : MonoBehaviour
 
 
 
-        float l = 1f;
+        float l = 110f;
         float m = 0f;
         for (int x = 0; x <= chunkSize * mapSize; x++)
         {
@@ -1159,25 +1296,20 @@ public class MapGen : MonoBehaviour
                 {
                     m = pNoise[x, y];
                 }
+                if(pNoise[x,y] < l)
+                {
+                    l = pNoise[x, y];
+                }
             }
         }
-
-        l = 1f - m;
 
         for (int x = 0; x <= chunkSize * mapSize; x++)
         {
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                pNoise[x, y] += l;
-                if(pNoise[x,y] < 0.2)
-                {
-                    pNoise[x, y] = 0f;
-                }
+                pNoise[x, y] = Mathf.InverseLerp(l, m, pNoise[x, y]);
             }
         }
-
-
-
 
 
 
@@ -1193,47 +1325,31 @@ public class MapGen : MonoBehaviour
         Materials[0].mainTexture = texture;
     }
 
-    private List<Vector2> plates = new List<Vector2>();
 
-    Voronoi TecPlates;
-    private List<Polygon> tecplates = new List<Polygon>();
-
-    void genPlates()
+    private void moistureTex()
     {
-        int tecPoints = 8;
-        List<uint> c = new List<uint>();
-        for (int i = 0; i < tecPoints; i++)
+        Texture2D texture = new Texture2D(chunkSize * mapSize, chunkSize * mapSize);
+        for (int x = 0; x <= chunkSize * mapSize; x++)
         {
-            c.Add(0);
-            plates.Add(new Vector2(
-                    UnityEngine.Random.Range(-mapWH / 2, mapWH / 2),
-                    UnityEngine.Random.Range(-mapWH / 2, mapWH / 2))
-            );
+            for (int y = 0; y <= chunkSize * mapSize; y++)
+            {
+                float m = moisture[x, y];
+                if (m < 0.5f)
+                {
+                    texture.SetPixel(x, y, Color.Lerp(Color.yellow, new Color(0.627f, 0.321f, 0.176f), Mathf.InverseLerp(0, 0.5f, m)));
+                }
+                else if (m > 0.5f)
+                {
+                    texture.SetPixel(x, y, Color.Lerp(Color.green / 2, Color.green, Mathf.InverseLerp(0.5f, 1.0f, m)));
+                }
+            }
         }
-
-
-        TecPlates = new Voronoi(plates, c, new Rect(-mapWH / 2, -mapWH / 2, mapWH, mapWH));
-        foreach (List<Vector2> l in TecPlates.Regions())
-        {
-            tecplates.Add(new Polygon(l));
-        }
+        texture.Apply();
+        Materials[0].mainTexture = texture;
     }
 
-    /*
-    Vector3 p1, p2, p3;
-        p1 = new Vector3(Random.Range(-mapWH / 2, -mapWH / 4), 0, Random.Range(mapWH / 4, mapWH / 2));
-        p2 = new Vector3(Random.Range(mapWH / 2, mapWH / 4), 0, Random.Range(mapWH / 4, mapWH / 2));
-        p3 = new Vector3(Random.Range(-mapWH / 2, mapWH / 2), 0, Random.Range(0, -mapWH / 2));
-        plates.Add(p1);
-        plates.Add(p2);
-        plates.Add(p3);
-    */
 
-
-
-
-
-
+    
 
     private Vector3 getPos(int x, int y)
     {
@@ -1246,127 +1362,9 @@ public class MapGen : MonoBehaviour
         int y = (int)(Mathf.Ceil((Pos.z + (mapWH / 2)) / (chunkscale)));
         return new Vector2(x,y);
     }
+
+    public float getHeight(int x, int y)
+    {
+        return vertZ[x, y];
+    }
 }
-
-
-
-/* 
-
-    float inPoly = 0;
-        float inPoly2 = 0;
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                bool added = false;
-                bool added2 = false;
-                Vector3 temp = getPos(x, y);
-                Vector3 temp2 = getPos(y, x);
-                foreach (Polygon p in map)
-                {
-                    if (p.isAroundPolygon(temp))
-                    {
-                        if (p.isInPolygon(temp))
-                        {
-                            if (!added)
-                            {
-                                inPoly += it;
-                                vertZ[x, y] += inPoly;
-                                added = true;
-                            }
-                        }
-                    }
-                    if (p.isAroundPolygon(temp2))
-                    {
-                        if (p.isInPolygon(temp2))
-                        {
-                            if (!added2)
-                            {
-                                inPoly2 += it;
-                                xvertZ[y, x] += inPoly2;
-                                added2 = true;
-                            }
-                        }
-                    }
-                }
-
-
-
-
-
-
-
-
-
-
-
-
-
-                if (!added)
-                {
-                    for (int i = 0; i < inPoly; i++)
-                    {
-
-                        if (i > inPoly / 2)
-                        {
-                            vertZ[x, y - ((int)inPoly - i)] -= (i * it);
-                        }
-                    }
-                    inPoly = 0;
-                    //vertZ[x, y] = 0;
-                }
-                if (!added2)
-                {
-                    for (int i = 0; i < inPoly2; i++)
-                    {
-
-                        if (i > inPoly2 / 2)
-                        {
-                            xvertZ[y - ((int)inPoly2 - i), x] -= (i * it);
-                        }
-                    }
-                    inPoly2 = 0;
-                    //xvertZ[y, x] = 0;
-                }
-            }
-        }
-
-
-        float max = 0f;
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                if ((vertZ[x, y]) > (xvertZ[x, y]))
-                {
-                    vertZ[x, y] = (xvertZ[x, y]);
-                }
-                if (vertZ[x, y] > max)
-                {
-                    max = vertZ[x, y];
-                }
-            }
-        }
-
-
-
-        max += 15f;
-
-
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                if (vertZ[x, y] > 0)
-                {
-                    vertZ[x, y] = Mathf.Lerp(-15, maxHeight, (vertZ[x, y] + 15f) / max);
-                    Vector3 temp = getPos(x, y);
-                }
-                if (vertZ[x, y] == 0)
-                {
-                    vertZ[x, y] = -15;
-                }
-            }
-        }
-
-*/

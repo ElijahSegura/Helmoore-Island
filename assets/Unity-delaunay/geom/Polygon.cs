@@ -17,11 +17,8 @@ namespace Delaunay
             private float leastX, leastY, greatX, greatY;
             private bool enabled = false;
             private float distance = 0f;
-            private float height;
-
             public Polygon(List<Vector2> vertices)
             {
-                height = Random.Range(2000, 4000);
 
                 _vertices = vertices;
                 center = Center();
@@ -64,11 +61,7 @@ namespace Delaunay
             {
                 return distance;
             }
-
-            public float getHeight()
-            {
-                return height;
-            }
+            
 
 
 
@@ -166,7 +159,7 @@ namespace Delaunay
                 return false;
             }
 
-            public bool isInPolygon(Vector3 A, bool draw, float mapWH)
+            public bool isInPolygon(Vector3 A, float mapWH)
             {
                 Dictionary<LineSegment, Vector2> intersections = new Dictionary<LineSegment, Vector2>();
 
@@ -288,10 +281,7 @@ namespace Delaunay
                     bool inx = false;
                     Vector2 left = (Vector2)item.Key.p0;
                     Vector2 right = (Vector2)item.Key.p1;
-                    if(draw)
-                    {
-                        //Debug.DrawLine(new Vector3(left.x, 0, left.y), new Vector3(right.x, 0, right.y));
-                    }
+
                     if (left.x > right.x)
                     {
                         if (item.Value.x <= left.x && item.Value.x >= right.x)

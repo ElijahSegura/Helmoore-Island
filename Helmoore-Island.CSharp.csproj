@@ -82,6 +82,7 @@
     <Compile Include="assets\CodingElements\Square.cs" />
     <Compile Include="assets\CodingElements\Triangle.cs" />
     <Compile Include="assets\CodingElements\mapV.cs" />
+    <Compile Include="assets\DualMapTest.cs" />
     <Compile Include="assets\Map\Chunk.cs" />
     <Compile Include="assets\Map\Map.cs" />
     <Compile Include="assets\Map\MeshGen.cs" />
