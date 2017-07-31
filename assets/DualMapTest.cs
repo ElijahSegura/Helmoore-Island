@@ -3,44 +3,33 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class DualMapTest : MonoBehaviour {
-    public GameObject MapA, MapB;
+    public MapGen A, B;
     private int mapSize = 32;
-    private int chunkSize = 32; //max size for chunksize is 250, 251 is over the mesh vertex limit
+    private int chunkSize = 32;//max size for chunksize is 250, 251 is over the mesh vertex limit
     float[,] vertZ;
     float chunkscale;
     public Material mat;
     public string Seed;
 	// Use this for initialization
 	void Start () {
+        A = new MapGen();
+        B = new MapGen();
         HighPoly = new Square[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         LowPoly = new Square[((chunkSize + 1) / 4) * mapSize, ((chunkSize + 1) / 4) * mapSize];
         vertZ = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
-        if (Seed != null)
-        {
-            string[] seeds = Seed.Split(':');
-            string[] mapASeeds = seeds[0].Split(',');
-            string[] mapBSeeds = seeds[1].Split(',');
-            MapA.GetComponent<MapGen>().run(int.Parse(mapASeeds[0]), int.Parse(mapASeeds[1]));
-            MapB.GetComponent<MapGen>().run(int.Parse(mapBSeeds[0]), int.Parse(mapBSeeds[1]));
-        }
-        else
-        {
-            MapA.GetComponent<MapGen>().run(-1, -1);
-            MapB.GetComponent<MapGen>().run(-1, -1);
-        }
+        A.run(-1, -1, mapSize, chunkSize, mat);
+        B.run(-1, -1, mapSize, chunkSize, mat);
         setSeeds();
-        chunkscale = MapA.GetComponent<MapGen>().getChunkScale();
+        chunkscale = A.getChunkScale();
         Combine();
         genSquares();
         load();
-        Destroy(MapA);
-        Destroy(MapB);
-        Destroy(gameObject);
     }
+    
 
     private void setSeeds()
     {
-        Seed = MapA.GetComponent<MapGen>().getSeed() + ":" + MapB.GetComponent<MapGen>().getSeed();
+        Seed = A.getSeed() + ":" + B.getSeed();
     }
     
     private Square[,] HighPoly;
@@ -51,8 +40,8 @@ public class DualMapTest : MonoBehaviour {
         {
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                float a = MapA.GetComponent<MapGen>().getHeight(x, y);
-                float b = (MapB.GetComponent<MapGen>().getHeight(x, y));
+                float a = A.getHeight(x, y);
+                float b = (B.getHeight(x, y));
                 if(a < 0)
                 {
                     a = 0;
@@ -90,7 +79,6 @@ public class DualMapTest : MonoBehaviour {
                 }
             }
         }
-        
     }
 
     Chunk[,] chunkMap;
@@ -116,7 +104,40 @@ public class DualMapTest : MonoBehaviour {
                     temp.transform.position = new Vector3(((x * (chunkSize * chunkscale)) - (50000 / 2)), 0, ((y * (chunkSize * chunkscale)) - (50000 / 2)));
                 }
             }
-
         }
+    }
+
+
+    public GameObject tree;
+    void Update()
+    {
+        Debug.Log("loading");
+        int treeCount = 500;
+        for (int x = 0; x < mapSize; x++)
+        {
+            for (int y = 0; y < mapSize; y++)
+            {
+                for (int i = 0; i < treeCount; i++)
+                {
+                    Vector3 temp = new Vector3(((x * (chunkSize * chunkscale)) - (50000 / 2)), 10000, ((y * (chunkSize * chunkscale)) - (50000 / 2)));
+                    float px = Random.Range(-(chunkscale / 2f) * chunkSize, (chunkscale / 2f) * chunkSize);
+                    float py = Random.Range(-(chunkscale / 2f) * chunkSize, (chunkscale / 2f) * chunkSize);
+                    temp.x += px;
+                    temp.z += py;
+                    RaycastHit o;
+
+                    if (Physics.Raycast(temp, Vector3.down, out o, 50000))
+                    {
+                        if (o.point.y > 25)
+                        {
+                            GameObject t = GameObject.Instantiate(tree);
+                            t.transform.position = o.point;
+                        }
+                    }
+
+                }
+            }
+        }
+        
     }
 }

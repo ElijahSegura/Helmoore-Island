@@ -7,11 +7,9 @@ using System.Runtime.InteropServices;
 
 
 
-public class MapGen : MonoBehaviour
+public class MapGen
 {
-    [SerializeField]
-    private int
-        m_pointCount = 380;
+    private int m_pointCount = 380;
     public List<AnimationCurve> c = new List<AnimationCurve>();
     public AnimationCurve DesertCurve = new AnimationCurve();
     public List<Material> Materials = new List<Material>();
@@ -19,8 +17,8 @@ public class MapGen : MonoBehaviour
     //blue is ocean, yellow is desert, green is plains, dark green is forest, purple is swamp
     private Color[] biomes = new Color[] { Color.blue, Color.yellow, Color.green, new Color(Color.green.r / 2, Color.green.g / 2, Color.green.b / 2), Color.red + Color.blue, Color.white };
     private Chunk[,] chunkMap;
-    private int mapSize = 32;
-    private int chunkSize = 32; //max size for chunksize is 250, 251 is over the mesh vertex limit
+    private int mapSize;
+    private int chunkSize; //max size for chunksize is 250, 251 is over the mesh vertex limit
     private float it;
     private float chunkscale;
     private int rivers;
@@ -49,8 +47,11 @@ public class MapGen : MonoBehaviour
     private Square[,] Squares;
     private float[,] xvertZ;
     private float[,] pNoise;
-    public void run(int seedx, int seedy)
+    public void run(int seedx, int seedy, int maps, int chunks, Material mat)
     {
+        mapSize = maps;
+        chunkSize = chunks;
+        Materials.Add(mat);
         if (seedx >= 0 && seedy >= 0)
         {
             xOffset = seedx;
@@ -225,32 +226,7 @@ public class MapGen : MonoBehaviour
     {
         return chunkscale;
     }
-
-    public void loadChunks()
-    {
-        chunkMap = new Chunk[mapSize, mapSize];
-        for (int x = 0; x < mapSize; x++)
-        {
-            for (int y = 0; y < mapSize; y++)
-            {
-                Chunk c = new Chunk(chunkSize, mapSize, x, y, chunkscale, vertZ, Squares);
-                if (!c.isflat())
-                {
-                    GameObject temp = new GameObject("Chunk: " + x + ":" + y);
-                    temp.AddComponent<MeshRenderer>();
-                    temp.GetComponent<MeshRenderer>().receiveShadows = true;
-                    temp.AddComponent<MeshFilter>();
-                    temp.GetComponent<MeshFilter>().mesh = c.getMesh();
-                    temp.AddComponent<MeshCollider>();
-                    temp.GetComponent<MeshCollider>().sharedMesh = c.getMesh();
-                    temp.GetComponent<MeshFilter>().mesh.RecalculateNormals();
-                    temp.GetComponent<MeshRenderer>().material = Materials[0];
-                    temp.transform.position = new Vector3(((x * (chunkSize * chunkscale)) - (mapWH / 2)), 0, ((y * (chunkSize * chunkscale)) - (mapWH / 2)));
-                }
-            }
-
-        }
-    }
+    
 
     /// <summary>
     /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -777,7 +753,7 @@ public class MapGen : MonoBehaviour
                 {
                     if (vertZ[x, y] > 0)
                     {
-                        vertZ[x, y] *= c[0].Evaluate(vertZ[x, y] / islandHeights[islands[x, y]]);
+                        vertZ[x, y] *= vertZ[x, y] / islandHeights[islands[x, y]];
                     }
                 }
             }
