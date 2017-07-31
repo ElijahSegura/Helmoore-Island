@@ -2,7 +2,9 @@
 using System.Collections;
 using Delaunay.Geo;
 using System.Collections.Generic;
+using System;
 
+[Serializable]
 public class Square {
     private bool enabled = true;
     private Vector3[] points;

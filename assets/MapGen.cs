@@ -5,8 +5,6 @@ using Delaunay.Geo;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-
-
 public class MapGen : MonoBehaviour
 {
     public List<Chunk> sharableChunks;
@@ -16,13 +14,13 @@ public class MapGen : MonoBehaviour
         m_pointCount = 380;
     public List<AnimationCurve> c = new List<AnimationCurve>();
     public AnimationCurve DesertCurve = new AnimationCurve();
-    public List<Material> Materials = new List<Material>();
+    public List<Material> Materials = new List<Material>(1);
     private Map serverMap;//THIS IS WHAT WE WILL SEND OVER THE SERVER TO THE CLIENT, IT WILL HAVE MAPHEIGHT DATA, CURRENT CHUNK DATA, AND MAYBE SOME OTHER THINGS then we'll destroy the object that has this script to clean up some memory from the 2d arrays
     //blue is ocean, yellow is desert, green is plains, dark green is forest, purple is swamp
     private Color[] biomes = new Color[] { Color.blue, Color.yellow, Color.green, new Color(Color.green.r / 2, Color.green.g / 2, Color.green.b / 2), Color.red + Color.blue, Color.white };
     private Chunk[,] chunkMap;
-    private int mapSize = 32;
-    private int chunkSize = 32; //max size for chunksize is 250, 251 is over the mesh vertex limit
+    private int mapSize = 10;
+    private int chunkSize = 10; //max size for chunksize is 250, 251 is over the mesh vertex limit
     private float it;
     public float chunkscale;
     private int rivers;
@@ -51,6 +49,7 @@ public class MapGen : MonoBehaviour
     private Square[,] Squares;
     private float[,] xvertZ;
     private float[,] pNoise;
+    
     public void run(int seedx, int seedy)
     {
         if (seedx >= 0 && seedy >= 0)
@@ -703,21 +702,7 @@ public class MapGen : MonoBehaviour
                         newDown = false;
                     }
                 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                
                 if (islands[X - l, Y] == 0 && vertZ[X - l, Y] > 0)
                 {
                     islands[X - l, Y] = island;
@@ -776,12 +761,19 @@ public class MapGen : MonoBehaviour
         {
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                if (islands[x, y] > 0)
+                try
                 {
-                    if (vertZ[x, y] > 0)
+                    if (islands[x, y] > 0)
                     {
-                        vertZ[x, y] *= c[0].Evaluate(vertZ[x, y] / islandHeights[islands[x, y]]);
+                        if (vertZ[x, y] > 0)
+                        {
+                            vertZ[x, y] *= c[0].Evaluate(vertZ[x, y] / islandHeights[islands[x, y]]);
+                        }
                     }
+                }
+                catch(System.Exception e)
+                {
+                    Debug.Log(e.Message + " " + x + " " + y);
                 }
             }
         }

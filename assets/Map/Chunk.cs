@@ -13,8 +13,8 @@ public class Chunk {
     
     public Chunk(int chunkSize, int mapsize, int posx, int posy, float chunkScale, float[,] vertZ, Square[,] Squares)
     {
-        this.posx = posx;
-        this.posy = posy;
+        //this.posx = posx;
+        //this.posy = posy;
         float tX;
         float tY;
         float value;

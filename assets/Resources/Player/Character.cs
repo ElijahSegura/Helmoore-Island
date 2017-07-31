@@ -16,6 +16,17 @@ public class Character : Player {
     private double attackSpeed, regenRate;
     // Update is called once per frame
 
+    //Transform mainCamera;
+    //Vector3 cameraOffset;
+    //float cameraDistance = 16f;
+    //float cameraHeight = 16f;
+    
+    //private void Start()
+    //{
+    //    mainCamera = Camera.main.transform;
+    //    cameraOffset = new Vector3(0f, cameraHeight, -cameraDistance);
+    //}
+
     void Update() {
         control = GetComponent<CharacterController>();
         if (control.isGrounded)
@@ -28,10 +39,16 @@ public class Character : Player {
                 moveDirection.y = JumpStrength;
             }
         }
+        //Debug.Log("are you working?");
         transform.Rotate(new Vector3(0, Input.GetAxis("Mouse X") * sensitivity, 0));
         moveDirection.y -= Gravity * Time.deltaTime;
         control.Move(moveDirection * Time.deltaTime);
-	}
+        
+        //mainCamera.position = transform.position;
+        //mainCamera.rotation = transform.rotation;
+        //mainCamera.Translate(cameraOffset);
+        //mainCamera.LookAt(transform);
+    }
 
     public void setIndex(int i)
     {

@@ -5,31 +5,54 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
+using UnityEngine.Networking.NetworkSystem;
+using UnityEngine.SceneManagement;
 
 namespace assets.Networking
 {
     public class MyMsgType
     {
-        public static short TestCommand = MsgType.Highest + 1;
+        public static short GetMap = MsgType.Highest + 1;
     };
 
+    public class NetworkMessage_MapData : MessageBase
+    {
+        public Square[,] MapData { get; private set; }
+
+        public int mapSize;
+        public int chunkSize;
+        public float[,] vertZ;
+        public float chunkScale;
+
+        public NetworkMessage_MapData(Square[,] MapData, int mapSize, int chunkSize, float[,] vertZ, float chunkScale)
+        {
+            this.MapData = MapData;
+            this.mapSize = mapSize;
+            this.chunkSize = chunkSize;
+            this.vertZ = vertZ;
+            this.chunkScale = chunkScale;
+        }
+        public NetworkMessage_MapData()
+        {
+
+        }
+    }
+    
     class OurNetworkManager : MonoBehaviour
     {
-        MapGen mapGeneration;
-        List<Chunk> map;
+        //private void Update()
+        //{
+        //    if (NetworkServer.active)
+        //    {
+                
+        //        if (Input.GetKeyDown(KeyCode.S))
+        //        {
+        //            NetworkServer.SendToAll(MyMsgType.GetMap, new TestMessage() { message = "Did it work?" });
+        //        }
+        //    }
+        //}
 
-        private Boolean startUp = true;
-
-        private void Update()
-        {
-            if (matchCreated)
-            {
-                if (Input.GetKeyDown(KeyCode.S))
-                {
-                    NetworkServer.SendToAll(MyMsgType.TestCommand, new TestMessage() { message = "Did it work?" });
-                }
-            }
-        }
+        public Material mat;
 
         List<MatchInfoSnapshot> matchList = new List<MatchInfoSnapshot>();
         bool matchCreated;
@@ -66,6 +89,11 @@ namespace assets.Networking
             if(matchCreated)
             {
                 GUILayout.Label("Connections " + NetworkServer.connections.Count);
+
+                if(GUILayout.Button("Shutdown Server"))
+                {
+                    NetworkServer.Shutdown();
+                }
             }
 
             if (matchList.Count > 0)
@@ -81,16 +109,24 @@ namespace assets.Networking
             }
 
             GUILayout.Label(message);
+            
+        }
 
-            //if (startUp)
-            //{
-            //    GUI.Label(new Rect(2, 10, 150, 100), "Press S for server");
-            //    GUI.Label(new Rect(2, 30, 150, 100), "Press B for both");
-            //    GUI.Label(new Rect(2, 50, 150, 100), "Press C for client");
-            //}
+        public void OnPlayerConnect(NetworkMessage message)
+        {
+            NetworkServer.SendToClient(
+                message.conn.connectionId, 
+                MyMsgType.GetMap, 
+                new NetworkMessage_MapData(mapData.GetHighPolyMap(), 
+                    mapData.mapSize,
+                    mapData.chunkSize,
+                    mapData.vertZ,
+                    mapData.chunkscale)
+                );
+
         }
         
-
+        DualMapTest mapData;
         public void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
         {
             if (success)
@@ -98,13 +134,46 @@ namespace assets.Networking
                 Debug.Log("Create match succeeded");
                 matchCreated = true;
                 NetworkServer.Listen(matchInfo, 9000);
+                NetworkServer.RegisterHandler(MsgType.Connect, OnPlayerConnect);
                 Utility.SetAccessTokenForNetwork(matchInfo.networkId, matchInfo.accessToken);
+
+                try
+                {
+                    MapGen MapFirst = new MapGen() { Materials = new List<Material> { mat } };
+                    MapGen MapSecond = new MapGen() { Materials = new List<Material> { mat } };
+                    mapData = new DualMapTest() { MapA = MapFirst, MapB = MapSecond };
+                    mapData.Start();
+                    Debug.Log("Map Generated");
+                }
+                catch(Exception e)
+                {
+                    Debug.LogError(e.Message);
+                }
+
+                //SceneManager.LoadSceneAsync("GameMap", LoadSceneMode.Additive);
+
+                //GameObject[] goArray = SceneManager.GetSceneByName("GameMap").GetRootGameObjects();
+                //if (goArray.Length > 0)
+                //{
+                //    for (int i = 0; i < goArray.Length; i++)
+                //    {
+                //        GameObject rootGo = goArray[i];
+                //        Debug.Log(rootGo.name);
+                //    }
+
+                //    // Do something with rootGo here...
+                //}
             }
             else
             {
                 Debug.LogError("Create match failed: " + extendedInfo);
             }
         }
+
+
+
+
+
 
         public void OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matches)
         {
@@ -132,7 +201,7 @@ namespace assets.Networking
                 Utility.SetAccessTokenForNetwork(matchInfo.networkId, matchInfo.accessToken);
                 NetworkClient myClient = new NetworkClient();
                 myClient.RegisterHandler(MsgType.Connect, OnConnected);
-                myClient.RegisterHandler(MyMsgType.TestCommand, testRecieveCommand);
+                myClient.RegisterHandler(MyMsgType.GetMap, HandleNewMap);
                 myClient.Connect(matchInfo);
             }
             else
@@ -141,12 +210,49 @@ namespace assets.Networking
             }
         }
 
-        private void testRecieveCommand(NetworkMessage netMsg)
+        private void HandleNewMap(NetworkMessage netMsg)
         {
-            Debug.Log("RECEIVED!");
-            TestMessage hehe = netMsg.ReadMessage<TestMessage>();
-            Debug.Log(hehe.message);
-            message = hehe.message;
+            try
+            {
+                if(netMsg == null)
+                {
+                    Debug.Log("netMsg is null");
+                }
+                NetworkMessage_MapData msg = netMsg.ReadMessage<NetworkMessage_MapData>();
+                Debug.Log(String.Format("Map data Received {0},{1},{2},{3},{4}", msg.mapSize, msg.chunkScale, msg.MapData.ToString(), msg.vertZ));
+                RenderMap(msg.MapData, msg.mapSize, msg.chunkSize, msg.vertZ, msg.chunkScale);
+            }
+            catch(Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
+
+        }
+
+        Chunk[,] chunkMap;
+        void RenderMap(Square[,] HighPoly,int mapSize, int chunkSize, float[,] vertZ, float chunkscale)
+        {
+            chunkMap = new Chunk[mapSize, mapSize];
+            for (int x = 0; x < mapSize; x++)
+            {
+                for (int y = 0; y < mapSize; y++)
+                {
+                    Chunk c = new Chunk(chunkSize, mapSize, x, y, chunkscale, vertZ, HighPoly);
+                    if (!c.isflat())
+                    {
+                        GameObject temp = new GameObject(x + ":" + y);
+                        temp.AddComponent<MeshRenderer>();
+                        temp.GetComponent<MeshRenderer>().receiveShadows = true;
+                        temp.AddComponent<MeshFilter>();
+                        temp.GetComponent<MeshFilter>().mesh = c.getMesh();
+                        temp.AddComponent<MeshCollider>();
+                        temp.GetComponent<MeshCollider>().sharedMesh = c.getMesh();
+                        temp.GetComponent<MeshFilter>().mesh.RecalculateNormals();
+                        temp.GetComponent<MeshRenderer>().material = mat;
+                        temp.transform.position = new Vector3(((x * (chunkSize * chunkscale)) - (50000 / 2)), 0, ((y * (chunkSize * chunkscale)) - (50000 / 2)));
+                    }
+                }
+            }
         }
 
         public void OnConnected(NetworkMessage msg)
@@ -204,10 +310,4 @@ namespace assets.Networking
 
         //}
     }
-
-    public class TestMessage : MessageBase
-    {
-        public string message;
-    }
-
 }

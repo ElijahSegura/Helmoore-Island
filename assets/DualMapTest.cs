@@ -1,48 +1,60 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class DualMapTest : MonoBehaviour {
-    public GameObject MapA, MapB;
-    private int mapSize = 32;
-    private int chunkSize = 32; //max size for chunksize is 250, 251 is over the mesh vertex limit
-    float[,] vertZ;
-    float chunkscale;
+    public MapGen MapA, MapB;
+    public int mapSize = 10;
+    public int chunkSize = 10; //max size for chunksize is 250, 251 is over the mesh vertex limit
+    public float[,] vertZ;
+    public float chunkscale;
     public Material mat;
     public string Seed;
 	// Use this for initialization
-	void Start () {
+	public void Start () {
+        Debug.Log("starting");
         HighPoly = new Square[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
         LowPoly = new Square[((chunkSize + 1) / 4) * mapSize, ((chunkSize + 1) / 4) * mapSize];
         vertZ = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
-        if (Seed != null)
+        if (!string.IsNullOrEmpty(Seed))
         {
             string[] seeds = Seed.Split(':');
             string[] mapASeeds = seeds[0].Split(',');
             string[] mapBSeeds = seeds[1].Split(',');
-            MapA.GetComponent<MapGen>().run(int.Parse(mapASeeds[0]), int.Parse(mapASeeds[1]));
-            MapB.GetComponent<MapGen>().run(int.Parse(mapBSeeds[0]), int.Parse(mapBSeeds[1]));
+            MapA.run(int.Parse(mapASeeds[0]), int.Parse(mapASeeds[1]));
+            MapB.run(int.Parse(mapBSeeds[0]), int.Parse(mapBSeeds[1]));
         }
         else
         {
-            MapA.GetComponent<MapGen>().run(-1, -1);
-            MapB.GetComponent<MapGen>().run(-1, -1);
+            MapA.run(-1, -1);
+            MapB.run(-1, -1);
         }
         setSeeds();
-        chunkscale = MapA.GetComponent<MapGen>().getChunkScale();
+        chunkscale = MapA.getChunkScale();
         Combine();
         genSquares();
-        load();
-        Destroy(MapA);
-        Destroy(MapB);
-        Destroy(gameObject);
+        //load();
+        //Destroy(MapA);
+        //Destroy(MapB);
+        //Destroy(gameObject);
     }
 
     private void setSeeds()
     {
-        Seed = MapA.GetComponent<MapGen>().getSeed() + ":" + MapB.GetComponent<MapGen>().getSeed();
+        Seed = MapA.getSeed() + ":" + MapB.getSeed();
     }
-    
+
+    public Square[,] GetHighPolyMap()
+    {
+        return HighPoly;
+    }
+
+    public Square[,] GetLowPolyMap()
+    {
+        return HighPoly;
+    }
+
     private Square[,] HighPoly;
     private Square[,] LowPoly;
     private void Combine()
@@ -51,8 +63,8 @@ public class DualMapTest : MonoBehaviour {
         {
             for (int y = 0; y <= chunkSize * mapSize; y++)
             {
-                float a = MapA.GetComponent<MapGen>().getHeight(x, y);
-                float b = (MapB.GetComponent<MapGen>().getHeight(x, y));
+                float a = MapA.getHeight(x, y);
+                float b = (MapB.getHeight(x, y));
                 if(a < 0)
                 {
                     a = 0;
@@ -116,7 +128,6 @@ public class DualMapTest : MonoBehaviour {
                     temp.transform.position = new Vector3(((x * (chunkSize * chunkscale)) - (50000 / 2)), 0, ((y * (chunkSize * chunkscale)) - (50000 / 2)));
                 }
             }
-
         }
     }
 }
