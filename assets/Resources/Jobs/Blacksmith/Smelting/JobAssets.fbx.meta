@@ -1,0 +1,152 @@
+fileFormatVersion: 2
+guid: d2e5227f8042c284d8dbc90f706a7599
+timeCreated: 1500357599
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: 19-Chapter7-19
+    100002: 51SkJtsZZPL._SY355_
+    100004: Crucible
+    100006: Crucible Clamp
+    100008: Crucible.001
+    100010: ForgeHammer
+    100012: Industrial Forge
+    100014: //RootNode
+    100016: lobster_trap
+    100018: PersonalFurnace
+    100020: ph-0
+    100022: Plane
+    100024: Plane.001
+    100026: Plane.002
+    100028: Torus
+    100030: Torus.001
+    400000: 19-Chapter7-19
+    400002: 51SkJtsZZPL._SY355_
+    400004: Crucible
+    400006: Crucible Clamp
+    400008: Crucible.001
+    400010: ForgeHammer
+    400012: Industrial Forge
+    400014: //RootNode
+    400016: lobster_trap
+    400018: PersonalFurnace
+    400020: ph-0
+    400022: Plane
+    400024: Plane.001
+    400026: Plane.002
+    400028: Torus
+    400030: Torus.001
+    2300000: 19-Chapter7-19
+    2300002: 51SkJtsZZPL._SY355_
+    2300004: Crucible
+    2300006: Crucible Clamp
+    2300008: Crucible.001
+    2300010: ForgeHammer
+    2300012: Industrial Forge
+    2300014: lobster_trap
+    2300016: PersonalFurnace
+    2300018: ph-0
+    2300020: Plane
+    2300022: Plane.001
+    2300024: Plane.002
+    2300026: Torus
+    2300028: Torus.001
+    3300000: 19-Chapter7-19
+    3300002: 51SkJtsZZPL._SY355_
+    3300004: Crucible
+    3300006: Crucible Clamp
+    3300008: Crucible.001
+    3300010: ForgeHammer
+    3300012: Industrial Forge
+    3300014: lobster_trap
+    3300016: PersonalFurnace
+    3300018: ph-0
+    3300020: Plane
+    3300022: Plane.001
+    3300024: Plane.002
+    3300026: Torus
+    3300028: Torus.001
+    4300000: Plane.002
+    4300002: Torus.001
+    4300004: Plane
+    4300006: Torus
+    4300008: Plane.001
+    4300010: Crucible.001
+    4300012: ForgeHammer
+    4300014: Crucible Clamp
+    4300016: Industrial Forge
+    4300018: PersonalFurnace
+    4300020: Crucible
+    4300022: ph-0
+    4300024: lobster_trap
+    4300026: 51SkJtsZZPL._SY355_
+    4300028: 19-Chapter7-19
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
