@@ -30,71 +30,26 @@ public class Character : MonoBehaviour {
 
     void Start()
     {
+        Application.targetFrameRate = 300;
         camera = GetComponentInChildren<PlayerCamera>();
         control = GetComponent<CharacterController>();
         Physics.IgnoreLayerCollision(9, 10);
         Physics.IgnoreLayerCollision(2, 10);
     }
-    
+
 
     float pickupDistance = 2f;
     float displayDistance = 10f;
-    private bool e = false;
     private bool busy = false;
     private bool dashing = false;
+
+
+    
     void Update() {
-        float closest = 10f;
-        Item closestItem = null;
-        foreach (Item item in FindObjectsOfType<Item>())
-        {
-            float distance = Vector3.Distance(transform.position, item.gameObject.transform.position);
-            if(distance < closest && distance <= pickupDistance)
-            {
-                closest = distance;
-                closestItem = item;
-            }
-        }
-
-
-        
-        if (closestItem != null)
-        {
-            //closestItem.setAsActive();
-        }
-
+        detectClosestItem();
         if (Input.GetButtonUp("Interact"))
         {
-            if (!e)
-            {
-                if (!busy)
-                {
-                    if(closestItem != null)
-                    {
-                        if (!closestItem.isContainer && closestItem.pickupable)
-                        {
-                            closestItem.GetComponent<Item>().Interact();
-                            sendSystemMessage("You picked up " + closestItem.getStack().Count + " " + closestItem.itemName);
-                        }
-                        else if (closestItem.isContainer)
-                        {
-                            camera.openContainer(((Container)closestItem).getItems(), closestItem.gameObject);
-                        }
-                        else
-                        {
-                            closestItem.Interact();
-                        }
-                    }
-                }
-                else
-                {
-                    sendSystemMessage("You Are Already Busy");
-                }
-                e = true;
-            }
-        }
-        else
-        {
-            e = false;
+            doInteract();
         }
 
 
@@ -119,34 +74,32 @@ public class Character : MonoBehaviour {
                 moveDirection.x = Input.GetAxis("Horizontal");
                 moveDirection.z = Input.GetAxis("Vertical");
                 Vector3 t = transform.TransformDirection(moveDirection);
-                moveDirection.x = t.x;
-                moveDirection.z = t.z;
-                moveDirection.x *= speed;
-                moveDirection.z *= speed;
+                moveDirection.x = t.x * speed;
+                moveDirection.z = t.z * speed;
 
 
-                if(dashI < dashes)
+                if (dashI < dashes)
                 {
-                    if(Input.GetButtonDown("Right Click") && !dashing)
+                    if (Input.GetButtonDown("Right Click") && !dashing)
                     {
                         dashCount = 5;
                         dashing = true;
                         checkDash();
                     }
-                    else if(dashing)
+                    else if (dashing)
                     {
                         checkDash();
                     }
                 }
-                
+
             }
             rot.y += Input.GetAxis("Mouse X") * sensitivity;
         }
         else
         {
-            moveDirection = new Vector3(0,moveDirection.y, 0);
+            moveDirection = new Vector3(0, moveDirection.y, 0);
         }
-        if(!control.isGrounded)
+        if (!control.isGrounded)
         {
             moveDirection.y -= Gravity * Time.deltaTime;
         }
@@ -172,7 +125,7 @@ public class Character : MonoBehaviour {
     {
         this.ableToControl = controlablle;
     }
-    
+
     private RaycastHit dashCast;
     private int dashCount = 10;
     private void checkDash()
@@ -186,7 +139,7 @@ public class Character : MonoBehaviour {
 
 
         //if nothing is in the way
-        if(dashCount > 0)
+        if (dashCount > 0)
         {
             if (!Physics.Raycast(transform.position, transform.forward, dis))
             {
@@ -207,6 +160,10 @@ public class Character : MonoBehaviour {
                 else if (!Physics.Raycast(pos, to, dis))
                 {
                     transform.position += transform.forward * dis;
+                    foreach (Fade g in FindObjectsOfType<Fade>())
+                    {
+                        g.initDelay();
+                    }
                     dashCount--;
                 }
             }
@@ -220,7 +177,6 @@ public class Character : MonoBehaviour {
             dashing = false;
         }
     }
-    
 
     public int getMaxInvSize()
     {
@@ -253,7 +209,7 @@ public class Character : MonoBehaviour {
         health += mod;
         camera.resetHealthBar(health, MaxHealth);
     }
-    
+
     public void mine(Vein self)
     {
         sendSystemMessage("You have mine 1 " + self.Ore.GetComponent<Item>().itemName);
@@ -265,7 +221,7 @@ public class Character : MonoBehaviour {
 
     public void minePure(Vein self)
     {
-        if(!self.gem)
+        if (!self.gem)
         {
             sendSystemMessage("You have mine 1 " + self.Ore.GetComponent<Item>().itemName);
             GameObject Ore = GameObject.Instantiate(self.Ore);
@@ -273,7 +229,7 @@ public class Character : MonoBehaviour {
             Ore.GetComponent<Ore>().genPureOre();
             Ore.GetComponent<Ore>().Interact();
         }
-        else if(self.gem)
+        else if (self.gem)
         {
             sendSystemMessage("You have mine 1 " + self.Gem.GetComponent<Item>().itemName);
             GameObject Ore = GameObject.Instantiate(self.Gem);
@@ -286,7 +242,7 @@ public class Character : MonoBehaviour {
     {
         return camera;
     }
-    
+
 
     public void openUI()
     {
@@ -367,9 +323,68 @@ public class Character : MonoBehaviour {
             }
         }
     }
+    Item closestItem = null;
+    private void detectClosestItem()
+    {
+        float closest = 10f;
+        foreach (Item item in FindObjectsOfType<Item>())
+        {
+            float distance = Vector3.Distance(transform.position, item.gameObject.transform.position);
+            if (distance < closest && distance <= pickupDistance)
+            {
+                closest = distance;
+                closestItem = item;
+            }
+        }
 
 
 
+        if (closestItem != null)
+        {
+            //closestItem.setAsActive();
+        }
+    }
+
+    private void doInteract()
+    {
+        if (!busy)
+        {
+            if (closestItem != null)
+            {
+                if (!closestItem.isContainer && closestItem.pickupable)
+                {
+                    closestItem.GetComponent<Item>().Interact();
+                    sendSystemMessage("You picked up " + closestItem.getStack().Count + " " + closestItem.itemName);
+                }
+                else if (closestItem.isContainer)
+                {
+                    camera.openContainer(((Container)closestItem).getItems(), closestItem.gameObject);
+                }
+                else
+                {
+                    closestItem.Interact();
+                }
+            }
+        }
+        else
+        {
+            sendSystemMessage("You Are Already Busy");
+        }
+    }
+
+    public float pushPower = 2.0F;
+    void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        Rigidbody body = hit.collider.attachedRigidbody;
+        if (body == null || body.isKinematic)
+            return;
+
+        if (hit.moveDirection.y < -0.3F)
+            return;
+
+        Vector3 pushDir = new Vector3(hit.moveDirection.x, 0, hit.moveDirection.z);
+        body.velocity = pushDir * pushPower;
+    }
 }
 
 

@@ -42,8 +42,16 @@ public class Vein : Item
         }
         else
         {
-            maxOres = 2;
-            ores = 2;
+            if(pure)
+            {
+                maxOres = 2;
+                ores = 2;
+            }
+            else
+            {
+                maxOres = 5;
+                ores = 5;
+            }
         }
         setChar();
         if(E != null)

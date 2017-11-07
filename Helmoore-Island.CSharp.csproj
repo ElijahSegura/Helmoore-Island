@@ -90,6 +90,7 @@
     <Compile Include="assets\CodingElements\Square.cs" />
     <Compile Include="assets\CodingElements\Triangle.cs" />
     <Compile Include="assets\CodingElements\mapV.cs" />
+    <Compile Include="assets\Glass.cs" />
     <Compile Include="assets\Map\Chunk.cs" />
     <Compile Include="assets\Map\Map.cs" />
     <Compile Include="assets\Map\MeshGen.cs" />
@@ -123,12 +124,15 @@
     <Compile Include="assets\Scripts\DB\Weapons.cs" />
     <Compile Include="assets\Scripts\DualMapTest.cs" />
     <Compile Include="assets\Scripts\Environment\EnvironmentTrigger.cs" />
+    <Compile Include="assets\Scripts\Environment\Hole.cs" />
     <Compile Include="assets\Scripts\Environment\Tree.cs" />
     <Compile Include="assets\Scripts\Environment\WorldButton.cs" />
     <Compile Include="assets\Scripts\Glass.cs" />
+    <Compile Include="assets\Scripts\ItemEmitter.cs" />
     <Compile Include="assets\Scripts\Log.cs" />
     <Compile Include="assets\Scripts\MapGen.cs" />
     <Compile Include="assets\Scripts\PerlinForms.cs" />
+    <Compile Include="assets\Scripts\PlayerRelated\BuildZone.cs" />
     <Compile Include="assets\Scripts\Server.cs" />
     <Compile Include="assets\UI\Chat.cs" />
     <Compile Include="assets\UI\ChatField.cs" />
@@ -140,7 +144,6 @@
     <Compile Include="assets\UI\Inventory.cs" />
     <Compile Include="assets\UI\MenuButton.cs" />
     <Compile Include="assets\UI\Option.cs" />
-    <Compile Include="assets\UI\Projector.cs" />
     <Compile Include="assets\UI\ResizeButton.cs" />
     <Compile Include="assets\UI\RightClickMenu.cs" />
     <Compile Include="assets\UI\Smelting.cs" />

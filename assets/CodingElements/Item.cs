@@ -50,7 +50,6 @@ public abstract class Item : MonoBehaviour {
         if (E != null)
         {
             E = GameObject.Instantiate(E);
-            E.GetComponent<Projector>().setLookAt(gameObject);
             E.transform.position = transform.position;
             E.SetActive(false);
         }

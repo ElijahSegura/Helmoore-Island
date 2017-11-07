@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityStandardAssets.ImageEffects;
 
 public class PlayerCamera : MonoBehaviour {
 
@@ -62,9 +63,20 @@ public class PlayerCamera : MonoBehaviour {
     // Update is called once per frame
     private bool busy = false;
     private bool chatting = false;
-	void Update () {
-        
 
+    public void setBuildable(bool cb)
+    {
+        CanBuildHere = cb;
+    }
+    public GameObject buildingMenu;
+    private RaycastHit dof;
+	void Update () {
+        //depth of field
+        if(Physics.Raycast(transform.position, transform.forward, out dof, 20f))
+        {
+
+        }
+        
 
         //controls first
         if (Input.GetButtonUp("Escape"))
@@ -126,7 +138,6 @@ public class PlayerCamera : MonoBehaviour {
                 endChat = false;
             }
         }
-        
 
         if(Input.GetButtonUp("Inventory") && !chatting)
         {
@@ -158,47 +169,58 @@ public class PlayerCamera : MonoBehaviour {
                 player.halfControl();
             }
         }
-
-
-
-
-
-
-        if (Input.GetButton("Build"))
-        {
-            if (!buildDown)
-            {
-                if (buildmode)
-                {
-                    buildmode = false;
-                    enableMagnets();
-                    disableMagnets();
-                    player.enableDash();
-                    BuildingObject.SetActive(false);
-                }
-                else
-                {
-                    player.disableDash();
-                    buildmode = true;
-                    enableMagnets();
-                    changeMagnets(BuildingObject.tag);
-                }
-            }
-            buildDown = true;
-        }
         else
         {
-            buildDown = false;
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
         }
-        
-        
-        
-        
+
+
+
+
+
+
+        if(CanBuildHere)
+        {
+            if (Input.GetButton("Build"))
+            {
+                if (!buildDown)
+                {
+                    if (buildmode)
+                    {
+                        buildmode = false;
+                        enableMagnets();
+                        disableMagnets();
+                        player.enableDash();
+                        buildingMenu.SetActive(false);
+                    }
+                    else
+                    {
+                        player.disableDash();
+                        buildmode = true;
+                        if(magnets)
+                        {
+                            enableMagnets();
+                        }
+                        
+                    }
+                }
+                buildDown = true;
+            }
+            else
+            {
+                buildDown = false;
+            }
+        }
+
+
+
+
 
 
 
         //then game feature
-	    if(buildmode)
+        if (buildmode)
         {
 
             
@@ -229,55 +251,58 @@ public class PlayerCamera : MonoBehaviour {
 
 
 
-            if(!BuildingObject.GetComponent<Architecture>().canPlace())
+            if(BuildingObject != null)
             {
-                BuildMaterial.color = new Color(1f, 0f, 0f, 0f);
-            }
-            else
-            {
-                BuildMaterial.color = new Color(0f, 1f, 0f, 0f);
-            }
-            timer += Time.deltaTime;
-            BuildMaterial.SetColor("_EmissionColor", BuildMaterial.color * (c.Evaluate(timer / 2f)));
-            
-            if (Physics.Raycast(transform.position, transform.forward, out hit, 10))
-            {
-                BuildingObject.SetActive(true);
-                willSnap();
-            }
-            else
-            {
-                BuildingObject.SetActive(false);
-            }
-
-
-            if(Input.GetButton("Click"))
-            {
-                if(!build)
+                if (!BuildingObject.GetComponent<Architecture>().canPlace())
                 {
-                    if (Physics.Raycast(transform.position, transform.forward, out hit, 10))
-                    {
-                        if(hit.collider.tag.Equals("Magnet"))
-                        {
-                            GameObject.Destroy(hit.collider.gameObject);
-                        }
-                        GameObject temp = GameObject.Instantiate(Build);
-                        temp.transform.position = BuildingObject.transform.position;
-                        temp.transform.rotation = BuildingObject.transform.rotation;
-                        changeMagnets(BuildingObject.tag);
-                    }
-                    
+                    BuildMaterial.color = new Color(1f, 0f, 0f, 0f);
                 }
-                build = true;
-            }
-            else
-            {
-                build = false;
-            }
+                else
+                {
+                    BuildMaterial.color = new Color(0f, 1f, 0f, 0f);
+                }
+                timer += Time.deltaTime;
+                BuildMaterial.SetColor("_EmissionColor", BuildMaterial.color * (c.Evaluate(timer / 2f)));
 
-            if(timer > 2f)
-            {
-                timer = 0f;
+                if (Physics.Raycast(transform.position, transform.forward, out hit, 10))
+                {
+                    BuildingObject.SetActive(true);
+                    willSnap();
+                }
+                else
+                {
+                    BuildingObject.SetActive(false);
+                }
+
+
+                if (Input.GetButton("Click"))
+                {
+                    if (!build)
+                    {
+                        if (Physics.Raycast(transform.position, transform.forward, out hit, 10))
+                        {
+                            if (hit.collider.tag.Equals("Magnet"))
+                            {
+                                GameObject.Destroy(hit.collider.gameObject);
+                            }
+                            GameObject temp = GameObject.Instantiate(Build);
+                            temp.transform.position = BuildingObject.transform.position;
+                            temp.transform.rotation = BuildingObject.transform.rotation;
+                            changeMagnets(BuildingObject.tag);
+                        }
+
+                    }
+                    build = true;
+                }
+                else
+                {
+                    build = false;
+                }
+
+                if (timer > 2f)
+                {
+                    timer = 0f;
+                }
             }
         }
 	}
@@ -470,6 +495,12 @@ public class PlayerCamera : MonoBehaviour {
     }
 
     private Character player;
+
+    public Character getPlayer()
+    {
+        return player;
+    }
+
     public void setSmelting(MetalBar bar)
     {
         s.barName.GetComponent<Text>().text = bar.itemName;
