@@ -13,13 +13,11 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile>
-    </CompilerResponseFile>
+    <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>EditorPlugins:7</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>5.5.2f1</UnityVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -111,6 +109,9 @@
     <Reference Include="UnityEditor.WindowsStandalone.Extensions">
       <HintPath>Library\UnityAssemblies\UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEditor.OSXStandalone.Extensions">
+      <HintPath>Library\UnityAssemblies\UnityEditor.OSXStandalone.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="SyntaxTree.VisualStudio.Unity.Bridge">
       <HintPath>Library\UnityAssemblies\SyntaxTree.VisualStudio.Unity.Bridge.dll</HintPath>
     </Reference>
@@ -143,11 +144,55 @@
     <Compile Include="assets\Standard Assets\Editor\ImageEffects\VignetteAndChromaticAberrationEditor.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\PostProcessing\Editor Resources\Monitors\HistogramCompute.compute" />
+    <None Include="assets\PostProcessing\Editor Resources\Monitors\HistogramRender.shader" />
+    <None Include="assets\PostProcessing\Editor Resources\Monitors\ParadeRender.shader" />
+    <None Include="assets\PostProcessing\Editor Resources\Monitors\VectorscopeCompute.compute" />
+    <None Include="assets\PostProcessing\Editor Resources\Monitors\VectorscopeRender.shader" />
+    <None Include="assets\PostProcessing\Editor Resources\Monitors\WaveformCompute.compute" />
+    <None Include="assets\PostProcessing\Editor Resources\Monitors\WaveformRender.shader" />
+    <None Include="assets\PostProcessing\Editor Resources\UI\CurveBackground.shader" />
+    <None Include="assets\PostProcessing\Editor Resources\UI\Trackball.shader" />
+    <None Include="assets\PostProcessing\Resources\Bluenoise64\COPYING.txt" />
+    <None Include="assets\PostProcessing\Resources\Bluenoise64\LICENSE.txt" />
+    <None Include="assets\PostProcessing\Resources\Shaders\ACES.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\AmbientOcclusion.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\AmbientOcclusion.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\Blit.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\Bloom.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\Bloom.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\BuiltinDebugViews.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\ColorGrading.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\Common.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\DepthOfField.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\DepthOfField.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\DiskKernels.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\EyeAdaptation.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\EyeAdaptation.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\EyeHistogram.compute" />
+    <None Include="assets\PostProcessing\Resources\Shaders\FXAA.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\FXAA3.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\Fog.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\GrainGen.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\LutGen.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\MotionBlur.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\MotionBlur.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\ScreenSpaceRaytrace.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\ScreenSpaceReflection.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\TAA.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\TAA.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\Tonemapping.cginc" />
+    <None Include="assets\PostProcessing\Resources\Shaders\Uber.shader" />
+    <None Include="assets\PostProcessing\Resources\Shaders\UberSecondPass.cginc" />
+    <None Include="assets\PostProcessing\Utilities\CustomMotionTexture\Shaders\CustomMotionVectorTexture.shader" />
+    <None Include="assets\Scripts\ImageEffects\VolumetricFog.shader" />
     <None Include="assets\Shaders\Crystal.shader" />
+    <None Include="assets\Shaders\DoubleSidedAlpha.shader" />
     <None Include="assets\Shaders\Emit.shader" />
     <None Include="assets\Shaders\GlassStainedBumpDistort.shader" />
     <None Include="assets\Shaders\GlassWithMask.shader" />
     <None Include="assets\Shaders\MetalTest.shader" />
+    <None Include="assets\Shaders\Ore.shader" />
     <None Include="assets\Shaders\Outline.shader" />
     <None Include="assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
     <None Include="assets\Standard Assets\Effects\ImageEffects\Shaders\BlendModesOverlay.shader" />
@@ -236,6 +281,7 @@
     <None Include="assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAddSoft.shader" />
     <None Include="assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAlpha.shader" />
     <None Include="assets\temp\Materials\Double Sided.shader" />
+    <None Include="assets\temp\RenderDepth.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

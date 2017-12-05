@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helmoore-Island.CSharp", "H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helmoore-Island.CSharp.Editor.Plugins", "Helmoore-Island.CSharp.Editor.Plugins.csproj", "{DF1EA4F4-4FDD-4E69-0754-355693F31E7A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helmoore-Island.CSharp.Editor", "Helmoore-Island.CSharp.Editor.csproj", "{8D3A2606-3AB7-C273-4FFE-6B37E58E30EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{DF1EA4F4-4FDD-4E69-0754-355693F31E7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF1EA4F4-4FDD-4E69-0754-355693F31E7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF1EA4F4-4FDD-4E69-0754-355693F31E7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D3A2606-3AB7-C273-4FFE-6B37E58E30EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D3A2606-3AB7-C273-4FFE-6B37E58E30EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D3A2606-3AB7-C273-4FFE-6B37E58E30EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D3A2606-3AB7-C273-4FFE-6B37E58E30EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
