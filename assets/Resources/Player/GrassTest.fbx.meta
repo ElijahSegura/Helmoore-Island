@@ -1,0 +1,174 @@
+fileFormatVersion: 2
+guid: 89b9d5446c24dc2409aa6b490a9b4fd1
+timeCreated: 1517364614
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: GrassTest.002
+    100004: Hemi
+    100006: Hemi.001
+    100008: GrassTest.000
+    100010: GrassTest.001
+    100012: GrassTest.003
+    100014: GrassTest.004
+    100016: GrassTest.005
+    100018: GrassTest.006
+    100020: GrassTest.007
+    100022: GrassTest.008
+    100024: GrassTest.009
+    100026: GrassTest.010
+    100028: GrassTest.011
+    100030: GrassTest.012
+    100032: GrassTest.013
+    100034: GrassTest.014
+    100036: GrassTest.015
+    100038: Hemi.002
+    100040: Hemi.003
+    100042: Hemi.004
+    100044: GrassTest
+    400000: //RootNode
+    400002: GrassTest.002
+    400004: Hemi
+    400006: Hemi.001
+    400008: GrassTest.000
+    400010: GrassTest.001
+    400012: GrassTest.003
+    400014: GrassTest.004
+    400016: GrassTest.005
+    400018: GrassTest.006
+    400020: GrassTest.007
+    400022: GrassTest.008
+    400024: GrassTest.009
+    400026: GrassTest.010
+    400028: GrassTest.011
+    400030: GrassTest.012
+    400032: GrassTest.013
+    400034: GrassTest.014
+    400036: GrassTest.015
+    400038: Hemi.002
+    400040: Hemi.003
+    400042: Hemi.004
+    400044: GrassTest
+    2300000: GrassTest.002
+    2300002: GrassTest.000
+    2300004: GrassTest.001
+    2300006: GrassTest.003
+    2300008: GrassTest.004
+    2300010: GrassTest.005
+    2300012: GrassTest.006
+    2300014: GrassTest.007
+    2300016: GrassTest.008
+    2300018: GrassTest.009
+    2300020: GrassTest.010
+    2300022: GrassTest.011
+    2300024: GrassTest.012
+    2300026: GrassTest.013
+    2300028: GrassTest.014
+    2300030: GrassTest.015
+    2300032: GrassTest
+    2300034: //RootNode
+    3300000: GrassTest.002
+    3300002: GrassTest.000
+    3300004: GrassTest.001
+    3300006: GrassTest.003
+    3300008: GrassTest.004
+    3300010: GrassTest.005
+    3300012: GrassTest.006
+    3300014: GrassTest.007
+    3300016: GrassTest.008
+    3300018: GrassTest.009
+    3300020: GrassTest.010
+    3300022: GrassTest.011
+    3300024: GrassTest.012
+    3300026: GrassTest.013
+    3300028: GrassTest.014
+    3300030: GrassTest.015
+    3300032: GrassTest
+    3300034: //RootNode
+    4300000: GrassTest.002
+    4300002: GrassTest.015
+    4300004: GrassTest.014
+    4300006: GrassTest.013
+    4300008: GrassTest.012
+    4300010: GrassTest.011
+    4300012: GrassTest.010
+    4300014: GrassTest.009
+    4300016: GrassTest.008
+    4300018: GrassTest.007
+    4300020: GrassTest.006
+    4300022: GrassTest.005
+    4300024: GrassTest.004
+    4300026: GrassTest.003
+    4300028: GrassTest.001
+    4300030: GrassTest.000
+    4300032: GrassTest
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

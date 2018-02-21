@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1880886304086724}
+  m_IsPrefabParent: 1
+--- !u!1 &1880886304086724
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4033921754537682}
+  - component: {fileID: 114414198487156950}
+  m_Layer: 0
+  m_Name: GlobalDB
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!4 &4033921754537682
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1880886304086724}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -5.9288397, y: 0.46187973, z: -13.776196}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114414198487156950
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1880886304086724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c450abd46aa9854991a19b1b7438866, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CopperOre: {fileID: 1410797656024228, guid: df59e9496dccf1b429bb03441c65bfbb, type: 2}
+  SilverOre: {fileID: 1028633243200020, guid: 5f6f7f4592d50574ebae2642a9852809, type: 2}
+  GoldOre: {fileID: 1826772898491680, guid: 9f6cb53ba481a4142a26183b8036766e, type: 2}
+  IronOre: {fileID: 1210831596288836, guid: 2e3fbd539d7e2884592b0e00e15a83e5, type: 2}
+  CopperBar: {fileID: 1732511919767104, guid: a9e7a7ca769fcaf4dbb24252533ed16f, type: 2}
+  SilverBar: {fileID: 1070801153682320, guid: 49e5c1ac37eb1a54e89b66e73891116e, type: 2}
+  GoldBar: {fileID: 1811212904256362, guid: 8387539b3d866c443a05e8e8356be3b2, type: 2}
+  IronBar: {fileID: 1789032084205462, guid: bcef14a331a8ffb45977d3b8e96370fe, type: 2}
+  WoodLog: {fileID: 1890249797722798, guid: 444a3ed93280d3d4d8d0c98fc24b9a66, type: 2}
+  Carrot: {fileID: 1967832035838676, guid: 3d988feeb9345fb479b746060d992a11, type: 2}
+  Armor: {fileID: 0}
