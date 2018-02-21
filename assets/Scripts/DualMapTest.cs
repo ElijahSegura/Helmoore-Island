@@ -4,14 +4,17 @@ using UnityEngine;
 
 public class DualMapTest : MonoBehaviour {
     public MapGen MapA, MapB;
-    private int mapSize = 32;
-    private int chunkSize = 32;//max size for chunksize is 250, 251 is over the mesh vertex limit
+    public int mapSize = 10;
+    public int chunkSize = 10;//max size for chunksize is 250, 251 is over the mesh vertex limit
     float[,] MapHeights;
-    float chunkscale;
+    public float chunkscale;
     public Material mat;
     public string Seed;
-	// Use this for initialization
-	void Start () {
+
+    public int mapWH = 50000;
+
+    // Use this for initialization
+    void Start () {
         MapA = new MapGen();
         MapB = new MapGen();
         MapHeights = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
@@ -20,9 +23,22 @@ public class DualMapTest : MonoBehaviour {
         setSeeds();
         chunkscale = MapA.getChunkScale();
         Combine();
-        load();
+        //load();
     }
     
+    public float[,] CreateNewMapHeights()
+    {
+        MapA = new MapGen();
+        MapB = new MapGen();
+        MapHeights = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
+        MapA.run(-1, -1, mapSize, chunkSize, mat);
+        MapB.run(-1, -1, mapSize, chunkSize, mat);
+        setSeeds();
+        chunkscale = MapA.getChunkScale();
+        Combine();
+        return MapHeights;
+    }
+
 
     private void setSeeds()
     {
@@ -54,10 +70,8 @@ public class DualMapTest : MonoBehaviour {
         }
     }
 
-    private int mapWH = 50000;
-
     Chunk[,] chunkMap;
-	void load()
+    void load()
     {
         chunkMap = new Chunk[mapSize, mapSize];
         for (int x = 0; x < mapSize; x++)
