@@ -16,15 +16,12 @@ ModelImporter:
     2300000: Circle.010_MeshPart0
     2300002: Circle.010_MeshPart1
     2300004: Circle.010_MeshPart2
-    2300006: //RootNode
     3300000: Circle.010_MeshPart0
     3300002: Circle.010_MeshPart1
     3300004: Circle.010_MeshPart2
-    3300006: //RootNode
     4300000: Circle.010_MeshPart0
     4300002: Circle.010_MeshPart1
     4300004: Circle.010_MeshPart2
-    4300006: Circle.016
   materials:
     importMaterials: 1
     materialName: 0

@@ -23,22 +23,36 @@ public class FloralWind : MonoBehaviour {
         }
         time = Random.Range(0f, 1f);
         GetComponent<MeshFilter>().mesh.vertices = verts.ToArray();
+        windMod = info.getWindLevel(transform.position);
     }
 
     // Update is called once per frame
     Vector3 Temp;
+    private float windMod;
+    private bool update = false;
 	void Update () {
-        time += Time.deltaTime / 3;
-        foreach (int i in info.getVerts())
+        if(GetComponent<Renderer>().isVisible)
         {
-            Temp = verts[i];
-            Temp.x = verts[i].x + c.Evaluate(time);
-            verts[i] = Temp;
+            if (update)
+            {
+                time += Time.deltaTime * windMod;
+                foreach (int i in info.getVerts())
+                {
+                    Temp = verts[i];
+                    Temp.x = verts[i].x + c.Evaluate(time);
+                    verts[i] = Temp;
+                }
+                if (time >= 1)
+                {
+                    time = 0f;
+                }
+                GetComponent<MeshFilter>().mesh.vertices = verts.ToArray();
+                update = false;
+            }
+            else
+            {
+                update = true;
+            }
         }
-        if(time >= 1)
-        {
-            time = 0f;
-        }
-        GetComponent<MeshFilter>().mesh.vertices = verts.ToArray();
     }
 }

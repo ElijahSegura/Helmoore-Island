@@ -9,4 +9,13 @@ public class WindInfo : MonoBehaviour {
     {
         return edit;
     }
+
+    public float getWindLevel(Vector3 pos)
+    {
+        return Mathf.PerlinNoise(pos.x / scale, pos.z / scale);
+    }
+
+    private float offX = 0f, offY = 0f;
+    private float time = 0f;
+    private float scale = 200f;
 }

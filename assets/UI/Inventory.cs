@@ -16,10 +16,7 @@ public class Inventory : MonoBehaviour {
 	void OnEnable()
     {
         loadInventory();
-        if(space != null)
-        {
-            space.GetComponent<Text>().text = "Space: " + Camera.main.transform.parent.parent.GetComponent<Character>().getInventory().Count + " / " + Camera.main.transform.parent.parent.GetComponent<Character>().getMaxInvSize();
-        }
+        space.GetComponent<Text>().text = "Space: " + Camera.main.transform.parent.parent.GetComponent<Character>().getInventory().Count + " / " + Camera.main.transform.parent.parent.GetComponent<Character>().getMaxInvSize();
     }
 
     public void setFilter(Type type)

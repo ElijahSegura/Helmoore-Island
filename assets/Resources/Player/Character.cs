@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using System;
+
 public class Character : MonoBehaviour {
-    private Vector3 moveDirection = Vector3.zero;
+    Vector3 moveDirection = Vector3.zero;
     private Mob target;
     CharacterController control;
     public float speed, JumpStrength, sensitivity;
     public Vector3 Gravity;
+    private bool female = false;
     private bool RC = false;
     private int dashes = 5;
     private int health, MaxHealth, healthRegen;
@@ -15,69 +17,37 @@ public class Character : MonoBehaviour {
     private float experience = 0.00f, experienceNeeded = 100.00f;
     private Class Class;
     private Vector3 rot = new Vector3(0, 0, 0);
-    private double attackSpeed;
-    public int level = 1;
-    
-    private int dashI = 0;
-    private bool ableToControl = true;
-    private bool dash = true;
-    private List<Item> Inventory = new List<Item>();
-    private int gold = 0;
-    private string characterName = "TestBUbba";
-    private bool freeRunning = false;
-
-    #region needed References
-    [SerializeField]
-    private PlayerCamera camera;
-    [SerializeField]
-    private Animator characterAnimation;
-    [SerializeField]
-    private CameraControll cc;
-    #endregion
-
-    #region Getters And Setters
-    public int getMaxInvSize()
-    {
-        return maxInventory;
-    }
-
-    public int getCurrentInvSize()
-    {
-        return Inventory.Count;
-    }
-
-    public List<Item> getInventory()
-    {
-        return Inventory;
-    }
-    public string getCName()
-    {
-        return characterName;
-    }
-
-    public void setControl(bool controlablle)
-    {
-        this.ableToControl = controlablle;
-    }
-    #endregion
-
+    private double attackSpeed, regenRate;
+    private int level = 1;
 
     public void stopFreeRun()
     {
         freeRunning = false;
     }
 
+    private int dashI = 0;
+    private bool ableToControl = true;
+    private bool dash = true;
+    private List<Item> Inventory = new List<Item>();
+    private int gold = 0;
+    private new PlayerCamera camera;
+    private string characterName = "TestBUbba";
+    private bool freeRunning = false;
     public void addGold(int amount)
     {
         this.gold += amount;
     }
 
-    
+    public string getCName()
+    {
+        return characterName;
+    }
 
     void Start()
     {
-        Application.targetFrameRate = 144;
+        Application.targetFrameRate = 300;
         Application.runInBackground = true;
+        camera = GetComponentInChildren<PlayerCamera>();
         control = GetComponent<CharacterController>();
         Physics.IgnoreLayerCollision(2, 9);
         Physics.IgnoreLayerCollision(2, 8);
@@ -89,24 +59,14 @@ public class Character : MonoBehaviour {
     float npcDistance = 5f;
     private bool busy = false;
     private bool dashing = false;
-    private float dashRegenTime = 6f;
-    private float regenTimer = 6f;
+
 
     
-    #region Update
     void Update() {
         detectClosestItemOrNpc();
         if (Input.GetButtonUp("Interact"))
         {
             doInteract();
-        }
-
-        if (Input.GetButtonDown("Click"))
-        {
-            if(!characterAnimation.GetBool("Attack"))
-            {
-                characterAnimation.SetBool("Attack", true);
-            }
         }
 
 
@@ -125,7 +85,7 @@ public class Character : MonoBehaviour {
                 if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
                 {
                     transform.Rotate(rot);
-                    cc.reset(transform.rotation.eulerAngles);
+                    GetComponentInChildren<CameraControll>().reset(transform.rotation.eulerAngles);
                     rot.y = 0;
                 }
                 moveDirection.x = Input.GetAxis("Horizontal");
@@ -133,48 +93,23 @@ public class Character : MonoBehaviour {
                 Vector3 t = transform.TransformDirection(moveDirection);
                 moveDirection.x = t.x * speed;
                 moveDirection.z = t.z * speed;
-                if (dash && dashTime > 0)
+
+
+                if(dash)
                 {
                     if (dashI < dashes)
                     {
-                        if ((Input.GetButton("Dash")))
+                        if ((Input.GetButton("Right Click")))
                         {
-                            if (!dashing && dashTime > 1f)
-                            {
-                                if (!Physics.Raycast(transform.position, transform.forward, 20))
-                                {
-                                    teleport(transform.position + (transform.forward * 20));
-                                }
-                            }
                             checkDash();
                             dashing = true;
                         }
-                        else if (dashing)
+                        else if(dashing)
                         {
                             endingDash();
                         }
-                        else if(!dashing)
-                        {
-                            addRegen();
-                            dashTime = maxDashTime * (regenTimer / dashRegenTime);
-                            camera.updateDashBar(dashTime / maxDashTime);
-                        }
                     }
                 }
-                else if(!dashing)
-                {
-                    addRegen();
-                    dashTime = maxDashTime * (regenTimer / dashRegenTime);
-                    camera.updateDashBar(dashTime / maxDashTime);
-                }
-                else
-                {
-                    if (dashing)
-                    {
-                        endingDash();
-                    }
-                }
-
 
             }
             rot.y += Input.GetAxis("Mouse X") * sensitivity;
@@ -193,7 +128,7 @@ public class Character : MonoBehaviour {
         }
         control.Move(moveDirection * Time.deltaTime);
     }
-    #endregion
+
     public void chooseClass(Class c)
     {
         this.Class = c;
@@ -209,18 +144,19 @@ public class Character : MonoBehaviour {
         this.dash = true;
     }
 
-    
+    public void setControl(bool controlablle)
+    {
+        this.ableToControl = controlablle;
+    }
 
     public GameObject itemHover;
 
     private RaycastHit dashCast;
     private int dashCount = 0;
     private int maxD = 15;
-    private float dashTime = 5f;
-    private float maxDashTime = 5f;
     private void checkDash()
     {
-        float dis = 15f;
+        float dis = 7.5f;
         Vector3 moveDir = Vector3.zero;
         if(Input.GetButton("Vertical"))
         {
@@ -235,43 +171,34 @@ public class Character : MonoBehaviour {
         {
             dashCount++;
         }
-        dashTime -= Time.deltaTime;
-        camera.updateDashBar(dashTime / maxDashTime);
         control.Move((moveDir * dis) * Time.deltaTime);
         camera.setFOV(((float)dashCount) / maxD, true);
-    }
-
-
-    public void teleport(Vector3 pos)
-    {
-        transform.position = pos;
-    }
-
-    public void teleport(GameObject target)
-    {
-
-    }
-
-    public void addRegen()
-    {
-        if(regenTimer < 6f)
-        {
-            regenTimer += Time.deltaTime;
-        }
     }
 
     private void endingDash()
     {
         dashCount--;
-        regenTimer = dashRegenTime * (dashTime / maxDashTime);
         camera.setFOV(((float)dashCount) / maxD, true);
-        if (dashCount <= 0.5f)
+        if (dashCount <= 0)
         {
             dashing = false;
         }
     }
 
-    
+    public int getMaxInvSize()
+    {
+        return maxInventory;
+    }
+
+    public int getCurrentInvSize()
+    {
+        return Inventory.Count;
+    }
+
+    public List<Item> getInventory()
+    {
+        return Inventory;
+    }
 
     private int maxInventory = 200;
     public void addToInventory(Item pickedUp)
@@ -334,21 +261,21 @@ public class Character : MonoBehaviour {
 
     public void openUI()
     {
-        cc.setControlable(false);
+        GetComponentInChildren<CameraControll>().setControlable(false);
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }
 
     public void closeUI()
     {
-        cc.setControlable(true);
+        GetComponentInChildren<CameraControll>().setControlable(true);
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
     }
 
     public void halfControl()
     {
-        cc.setControlable(true);
+        GetComponentInChildren<CameraControll>().setControlable(true);
     }
 
     public void removeFromInventory(Item item)
@@ -432,7 +359,7 @@ public class Character : MonoBehaviour {
                 }
                 else if(item.GetComponent<NPC>() != null)
                 {
-                    if (distance < closest || distance <= npcDistance)
+                    if (distance < closest && distance <= npcDistance)
                     {
                         closest = distance;
                         closestNPC = item.GetComponent<NPC>();
@@ -478,13 +405,6 @@ public class Character : MonoBehaviour {
             itemHover.SetActive(false);
             camera.hideItem();
         }
-        if(closestNPC != null)
-        {
-            if (Vector3.Distance(transform.position, closestNPC.transform.position) > npcDistance)
-            {
-                closestNPC = null;
-            }
-        }
     }
 
     private void doInteract()
@@ -509,7 +429,7 @@ public class Character : MonoBehaviour {
             }
             else if(closestNPC != null)
             {
-                closestNPC.GetComponent<NPC>().Interact();
+                closestItem.GetComponent<NPC>().Interact();
             }
         }
         else

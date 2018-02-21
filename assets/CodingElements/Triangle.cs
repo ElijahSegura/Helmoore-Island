@@ -11,11 +11,6 @@ public class Triangle {
         points = v;
     }
 
-    public Triangle(Vector3[] points)
-    {
-
-    }
-
     public int[] getInts()
     {
         return iPoint;

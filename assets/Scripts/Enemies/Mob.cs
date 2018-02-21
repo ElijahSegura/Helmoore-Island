@@ -14,23 +14,6 @@ public class Mob : MonoBehaviour {
     public int maxLoot;
     public GameObject crystal;
     
-    void Start()
-    {
-        int cL = FindObjectOfType<Character>().level;
-        if(level - cL > 5)
-        {
-            HealthBar.color = Color.red;
-        }
-        else if(level - cL > -3 && level - cL < 3)
-        {
-            HealthBar.color = Color.green;
-        }
-        else if(level - cL < -5)
-        {
-            HealthBar.color = Color.blue;
-        }
-    }
-
     public void damage(float damage)
     {
         if(health > 0 && damage > 0)

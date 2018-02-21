@@ -12,18 +12,16 @@ public class PlayerCamera : MonoBehaviour {
     public Material BuildMaterial;
     public AnimationCurve c, fov;
     public bool holdToRotate = false;
-    public Image healthBar;
+    public GameObject healthBar;
     public GameObject TimeBar;
     public Image expBar;
     public GameObject itemReview;
-    public Image dashBar;
 
     [SerializeField]
     private GameObject Menu;
 
     [SerializeField]
     private bool magnets = true;
-
 
     internal GameObject getFarmUI()
     {
@@ -37,7 +35,7 @@ public class PlayerCamera : MonoBehaviour {
     private GameObject Build;
 
     private bool CanBuildHere = true;
-
+    
     int currentStruct = 0;
 
     private float lookLength = 8f;
@@ -51,7 +49,7 @@ public class PlayerCamera : MonoBehaviour {
     private bool inv = false;
     private bool invOpen = false;
     private float fieldOfView;
-    void Start() {
+    void Start () {
         fieldOfView = GetComponent<Camera>().fieldOfView;
         s = smeltingUI.GetComponent<Smelting>();
         player = GetComponentInParent<Character>();
@@ -63,20 +61,20 @@ public class PlayerCamera : MonoBehaviour {
 
     public void setBuildingObject(GameObject obj)
     {
-        if (BuildingObject != null)
+        if(BuildingObject != null)
         {
             Destroy(BuildingObject);
         }
         BuildingObject = obj;
         Build = BuildingObject;
         BuildingObject = GameObject.Instantiate(BuildingObject);
-        foreach (Collider c in BuildingObject.GetComponentsInChildren<Collider>())
+        foreach(Collider c in BuildingObject.GetComponentsInChildren<Collider>())
         {
             Destroy(c);
         }
         for (int i = 0; i < BuildingObject.transform.childCount; i++)
         {
-            if (BuildingObject.transform.GetChild(i).tag.Equals("MagnetParent"))
+            if(BuildingObject.transform.GetChild(i).tag.Equals("MagnetParent"))
             {
                 Destroy(BuildingObject.transform.GetChild(i).gameObject);
             }
@@ -115,7 +113,14 @@ public class PlayerCamera : MonoBehaviour {
     }
 
     private bool canBePlaced = false;
-    void Update() {
+	void Update () {
+        if(Input.GetButtonUp("Click"))
+        {
+            castFireBall();
+        }
+       
+
+
         //controls first
         if (Input.GetButtonUp("Escape"))
         {
@@ -126,39 +131,39 @@ public class PlayerCamera : MonoBehaviour {
                 ui.SetActive(true);
             }
             else {
-                if (InventoryWindow.activeSelf)
+                if(InventoryWindow.activeSelf)
                 {
                     closeInventory();
                 }
-                else if (Option.activeSelf)
+                else if(Option.activeSelf)
                 {
                     Option.SetActive(false);
                     Menu.SetActive(true);
                 }
-                else if (smeltingUI.activeSelf)
+                else if(smeltingUI.activeSelf)
                 {
                     player.closeUI();
                     smeltingUI.SetActive(false);
                 }
-                else if (forge.activeSelf)
+                else if(forge.activeSelf)
                 {
                     player.closeUI();
                     forge.SetActive(false);
                 }
-                else if (farmingInventory.activeSelf)
+                else if(farmingInventory.activeSelf)
                 {
                     player.closeUI();
                     farmingInventory.SetActive(false);
-                }
-                else if (buildingMenu.activeSelf)
+                } 
+                else if(buildingMenu.activeSelf)
                 {
                     buildingMenu.SetActive(false);
                 }
-                else if (crushingMenu.activeSelf)
+                else if(crushingMenu.activeSelf)
                 {
                     crushingMenu.SetActive(false);
                 }
-                else if (buildmode)//MUST BE LAST (so that you don't disable building when trying to close the menu)
+                else if(buildmode)//MUST BE LAST (so that you don't disable building when trying to close the menu)
                 {
                     buildmode = false;
                     buildingMenu.SetActive(false);
@@ -175,7 +180,7 @@ public class PlayerCamera : MonoBehaviour {
             }
         }
 
-        if (!chatting && !endChat)
+        if(!chatting && !endChat)
         {
             if (Input.GetButtonUp("Submit"))
             {
@@ -185,11 +190,11 @@ public class PlayerCamera : MonoBehaviour {
                 FindObjectOfType<Character>().setControl(false);
             }
         }
-        else if (!chatting && endChat)
+        else if(!chatting && endChat)
         {
             if (Input.GetButtonUp("Submit"))
             {
-                if (!busy)
+                if(!busy)
                 {
                     player.closeUI();
                 }
@@ -197,9 +202,9 @@ public class PlayerCamera : MonoBehaviour {
             }
         }
 
-        if (Input.GetButtonUp("Inventory") && !chatting)
+        if(Input.GetButtonUp("Inventory") && !chatting)
         {
-            if (InventoryWindow.activeSelf)
+            if(InventoryWindow.activeSelf)
             {
                 closeInventory();
             }
@@ -238,16 +243,16 @@ public class PlayerCamera : MonoBehaviour {
 
 
 
-        if (CanBuildHere)
+        if(CanBuildHere)
         {
             if (Input.GetButtonUp("Build"))
             {
-                if (buildingMenu.activeSelf)
+                if(buildingMenu.activeSelf)
                 {
                     buildingMenu.SetActive(false);
                     player.closeUI();
                 }
-                else if (!buildingMenu.activeSelf || !buildmode)
+                else if(!buildingMenu.activeSelf || !buildmode)
                 {
                     enableMagnets();
                     buildingMenu.SetActive(true);
@@ -270,7 +275,7 @@ public class PlayerCamera : MonoBehaviour {
             checkBuild();
             if (Input.GetButton("Right Click"))
             {
-                if (!holdToRotate)
+                if(!holdToRotate)
                 {
                     if (!r)
                     {
@@ -295,20 +300,20 @@ public class PlayerCamera : MonoBehaviour {
 
 
 
-            if (BuildingObject != null)
+            if(BuildingObject != null)
             {
-
+                
                 timer += Time.deltaTime;
 
                 if (Physics.Raycast(transform.position, transform.forward, out hit, 10))
                 {
-                    if (Vector3.Distance(hit.point, buildOrigin) < distance)
+                    if(Vector3.Distance(hit.point, buildOrigin) < distance)
                     {
                         BuildingObject.SetActive(true);
                         BuildingObject.transform.position = hit.point;
-                        canBePlaced = checkBuildCost();
+                        canBePlaced = true;
                     }
-                    else if (Vector3.Distance(hit.point, buildOrigin) > distance)
+                    else if(Vector3.Distance(hit.point, buildOrigin) > distance)
                     {
                         BuildingObject.SetActive(true);
                         BuildingObject.transform.position = hit.point;
@@ -324,17 +329,16 @@ public class PlayerCamera : MonoBehaviour {
                     BuildingObject.SetActive(false);
                 }
 
-                if (magnets)
+                if(magnets)
                 {
                     willSnap();
                 }
 
-                if (Input.GetButtonDown("Click") && !buildingMenu.activeSelf && canBePlaced)
+                if(Input.GetButtonDown("Click") && !buildingMenu.activeSelf && canBePlaced)
                 {
-                    if(BuildingObject.activeSelf)
-                    {
-                        buildObject();
-                    }
+                    GameObject justBuilt = GameObject.Instantiate(Build);
+                    justBuilt.transform.position = BuildingObject.transform.position;
+                    justBuilt.transform.localRotation = BuildingObject.transform.localRotation;
                 }
             }
         }
@@ -342,52 +346,28 @@ public class PlayerCamera : MonoBehaviour {
         {
 
         }
-    }
+	}
 
-    private void buildObject()
-    {
-        GameObject justBuilt = GameObject.Instantiate(Build);
-        justBuilt.transform.position = BuildingObject.transform.position;
-        justBuilt.transform.localRotation = BuildingObject.transform.localRotation;
-        a = BuildingObject.GetComponent<Architecture>();
-        for (int i = 0; i < a.wood; i++)
-        {
-            buildingResources.removeFromContainer("Wood Log");
-        }
-    }
-
-    private Architecture a;
-    private bool checkBuildCost()
-    {
-        a = BuildingObject.GetComponent<Architecture>();
-        if (a.wood > 0 && buildingResources.hasItem("Wood Log", a.wood))
-        {
-            return true;
-        }
-        return false;
-    }
 
     public GameObject tempMagicSpell;
     private void castFireBall()
     {
         GameObject Spell = GameObject.Instantiate(tempMagicSpell);
-        Vector3 spawn = FindObjectOfType<Character>().gameObject.transform.position + transform.forward + new Vector3(0, 1, 0);
+        Vector3 spawn = FindObjectOfType<Character>().gameObject.transform.position + transform.forward + new Vector3(0,1,0);
         Spell.transform.position = spawn;
         Spell.GetComponent<Rigidbody>().AddForce(transform.forward * 20, ForceMode.Impulse);
     }
 
     public void checkBuild()
     {
-        if (BuildingObject != null)
-        {
-            Architecture a = BuildingObject.GetComponent<Architecture>();
-        }
+        Architecture a = BuildingObject.GetComponent<Architecture>();
+        
     }
 
 
     private void changeMagnets(String type)
     {
-        if (Magnets.Count > 0)
+        if(Magnets.Count > 0)
         {
             enableMagnets();
         }
@@ -395,7 +375,7 @@ public class PlayerCamera : MonoBehaviour {
         {
             if (!item.name.Equals(type + " Magnets") && item.tag.Equals("MagnetParent"))
             {
-                if (item.activeSelf)
+                if(item.activeSelf)
                 {
                     item.SetActive(false);
                     Magnets.Add(item);
@@ -428,14 +408,14 @@ public class PlayerCamera : MonoBehaviour {
     {
         foreach (GameObject item in FindObjectsOfType<GameObject>())
         {
-            if (item.tag.Equals("MagnetParent"))
+            if(item.tag.Equals("MagnetParent"))
             {
                 Magnets.Add(item);
                 item.SetActive(false);
             }
         }
     }
-
+    
     private void changeStruct()
     {
         GameObject.Destroy(BuildingObject);
@@ -481,7 +461,6 @@ public class PlayerCamera : MonoBehaviour {
     }
 
 
-    private bool snapped = false;
     private void willSnap()
     {
         String tag = BuildingObject.tag;
@@ -490,17 +469,12 @@ public class PlayerCamera : MonoBehaviour {
             if ((hit.collider.tag.Equals("Magnet") && hit.collider.transform.parent.gameObject.name.Equals(tag)))
             {
                 Vector3 rotDif = new Vector3(0, (hit.collider.transform.parent.transform.parent.rotation.eulerAngles.y - BuildingObject.transform.rotation.eulerAngles.y), 0);
-                if(!snapped)
-                {
-                    BuildingObject.transform.Rotate(rotDif, Space.World);
-                    snapped = true;
-                }
+                BuildingObject.transform.Rotate(rotDif, Space.World);
                 BuildingObject.transform.position = hit.collider.transform.position;
             }
             else
             {
                 BuildingObject.transform.position = hit.point;
-                snapped = false;
             }
         }
     }
@@ -525,12 +499,12 @@ public class PlayerCamera : MonoBehaviour {
     public ContainerInventory conInventory;
     public void openInventory(bool container, Type filter)
     {
-        if (filter != null)
+        if(filter != null)
         {
             mouseEnabled = true;
             Inventory.setFilter(filter);
             InventoryWindow.SetActive(true);
-        }
+        } 
         else
         {
             mouseEnabled = true;
@@ -552,7 +526,7 @@ public class PlayerCamera : MonoBehaviour {
         ui.SetActive(true);
         containerUI.SetActive(false);
     }
-
+    
     public void resetHealthBar(int health, int maxHealth)
     {
         healthBar.GetComponent<Image>().fillAmount = (float)health / maxHealth;
@@ -707,7 +681,7 @@ public class PlayerCamera : MonoBehaviour {
         {
             foreach (SeedBox s in farmingInventory.GetComponentsInChildren<SeedBox>())
             {
-                if (c.index == s.index) {
+                if(c.index == s.index) {
                     s.setCP(c.gameObject);
                 }
             }
@@ -725,7 +699,21 @@ public class PlayerCamera : MonoBehaviour {
     public PostProcessingProfile ppe;
     public void setFOV(float curveLocation, bool dash)
     {
+        ChromaticAberrationModel.Settings ca = ppe.chromaticAberration.settings;
         GetComponent<Camera>().fieldOfView = fieldOfView * fov.Evaluate(curveLocation);
+        if(dash)
+        {
+            if(curveLocation == 0)
+            {
+                ca.intensity = 0.1f;
+                ppe.chromaticAberration.settings = ca;
+            }
+            else
+            {
+                ca.intensity = 1f;
+                ppe.chromaticAberration.settings = ca;
+            }
+        }
     }
 
     public void reviewItem(string name, string amountOrAction, Sprite icon)
@@ -747,7 +735,7 @@ public class PlayerCamera : MonoBehaviour {
         expBar.fillAmount = percent;
     }
 
-
+    
     public void AntiAliasing(bool enabled)
     {
         ppe.antialiasing.enabled = enabled;
@@ -768,25 +756,5 @@ public class PlayerCamera : MonoBehaviour {
         ppe.bloom.enabled = enabled;
     }
 
-    public void updateDashBar(float percent)
-    {
-        dashBar.fillAmount = percent;
-    }
 
-    public GameObject marketStall;
-    public void openStall(List<Item> items)
-    {
-        marketStall.SetActive(true);
-    }
-
-    private Container buildingResources;
-    public void setBuildCrate(Container c)
-    {
-        this.buildingResources = c;
-    }
-
-    public void clearBuildCrate()
-    {
-        buildingResources = null;
-    }
 }

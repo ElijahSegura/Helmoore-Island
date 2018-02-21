@@ -16,7 +16,6 @@ public class UIInventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     public GameObject rcmenu;
     public GameObject parent;
     public bool draggable;
-    public Text stack;
 
     void Start()
     {

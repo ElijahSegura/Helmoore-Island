@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Grassgen : MonoBehaviour {
-    private int width = 20, height = 20;
+    private int width = 60, height = 60;
     [SerializeField]
     private GameObject grassPrefab;
     private float range = 1f;//in both directions

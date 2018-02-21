@@ -6,8 +6,6 @@ public class WeaponTrail : MonoBehaviour {
     public int portions;
     public int updateframes;
     public GameObject top, bottom;
-    private Vector3[] topLine;
-    private Vector3[] bottomLine;
 
     private List<Vector3> verts = new List<Vector3>();
     private List<int> triangles = new List<int>();
@@ -19,16 +17,12 @@ public class WeaponTrail : MonoBehaviour {
         trail = new GameObject("Trial");
         trail.AddComponent<MeshFilter>();
         trail.AddComponent<MeshRenderer>();
-        topLine = new Vector3[portions];
-        bottomLine = new Vector3[portions];
-        vertices = new Vector3[4];
         mesh = new Mesh();
         trail.GetComponent<MeshFilter>().mesh = mesh;
         trail.GetComponent<MeshRenderer>().material = m;
 
     }
     // Update is called once per frame
-    private Vector3[] vertices;
     private int frame = 0;
 
     private Vector3 prevT;
@@ -36,11 +30,11 @@ public class WeaponTrail : MonoBehaviour {
     private int count = 0;
     int vs = 0;
 	void Update () {
-        trail.transform.position = bottom.transform.position;
+        
         frame++;
         foreach (Vector3 v in verts)
         {
-            if(vs < verts.Count - 4)
+            if(vs > 1)
             {
                 verts[vs] = v - (transform.position - prevT);
                 vs++;
@@ -50,6 +44,7 @@ public class WeaponTrail : MonoBehaviour {
                 vs++;
             }
         }
+        
         //odd = bottom
         //even = top
         
@@ -82,12 +77,12 @@ public class WeaponTrail : MonoBehaviour {
             }
             for (int i = 0; i < verts.Count; i += 2)
             {
-                verts[i + 1] = Vector3.Lerp(verts[i], verts[i + 1], ((float)(i + 1) / verts.Count));
+                verts[i + 1] = Vector3.Lerp(verts[i], verts[i + 1], ((float)(i) / verts.Count));
             }
-            updateMesh();
         }
+        updateMesh();
         prevT = transform.position;
-        
+        trail.transform.position = bottom.transform.position;
     }
     
     public void setCombat(bool combat)

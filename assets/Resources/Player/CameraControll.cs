@@ -9,26 +9,23 @@ public class CameraControll : MonoBehaviour {
     Vector3 og;
     private bool controlable = true;
 
-    [SerializeField]
-    private Camera c;
-
     void Start()
     {
         
-        MaxDistance = Vector3.Distance(transform.position, c.transform.position);
-        og = c.transform.localPosition;
+        MaxDistance = Vector3.Distance(transform.position, GetComponentInChildren<Camera>().transform.position);
+        og = GetComponentInChildren<Camera>().transform.localPosition;
     }
 
     RaycastHit hit;
 	void Update () {
-        Vector3 to = c.transform.position - transform.position;
+        Vector3 to = GetComponentInChildren<Camera>().transform.position - transform.position;
         if (Physics.Raycast(transform.position, to, out hit, MaxDistance))
         {
-            c.transform.position = Vector3.Lerp(transform.position, hit.point, 0.8f);
+            GetComponentInChildren<Camera>().transform.position = Vector3.Lerp(transform.position, hit.point, 0.8f);
         }
         else
         {
-            c.transform.localPosition = og;
+            GetComponentInChildren<Camera>().transform.localPosition = og;
         }
 
         

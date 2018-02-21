@@ -7,6 +7,6 @@ public class Hole : MonoBehaviour {
 	// Use this for initialization
 	void OnCollisionEnter(Collision col)
     {
-        Debug.Log("EHEE");
+        
     }
 }

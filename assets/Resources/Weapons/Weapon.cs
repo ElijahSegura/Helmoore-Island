@@ -3,12 +3,25 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Weapon : MonoBehaviour
+public class Weapon : Item
 {
-    public float damage;
-
-    public float getDamage()
+    
+    private bool weaponised = false;
+    public override void Interact()
     {
-        return damage;
+        
+    }
+
+    public void equip()
+    {
+        
+    }
+    public override GameObject getObject()
+    {
+        return null;
+    }
+    public override void set(Item i)
+    {
+
     }
 }

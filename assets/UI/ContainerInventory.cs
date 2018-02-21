@@ -23,7 +23,6 @@ public class ContainerInventory : MonoBehaviour, IDropHandler
             foreach (GameObject g in UIElements)
             {
                 if(g.GetComponent<UIInventoryItem>().getItem().itemName.Equals(item.itemName)) {
-                    g.GetComponent<UIInventoryItem>().stack.text = int.Parse(g.GetComponent<UIInventoryItem>().stack.text) + 1 + "";
                     has = true;
                 }
             }
