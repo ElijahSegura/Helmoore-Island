@@ -17,6 +17,11 @@ public class Container : Item
         containerItems.Remove(i);
     }
 
+    public void removeFromContainer(string i)
+    {
+
+    }
+
     public List<Item> getItems()
     {
         return containerItems;
@@ -33,5 +38,10 @@ public class Container : Item
     public override void set(Item i)
     {
 
+    }
+
+    public bool hasItem(string i, int amount)
+    {
+        return false;
     }
 }

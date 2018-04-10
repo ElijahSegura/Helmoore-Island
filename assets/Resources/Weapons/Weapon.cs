@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Weapon : Item
 {
-    
+    public float damage;   
     private bool weaponised = false;
     public override void Interact()
     {

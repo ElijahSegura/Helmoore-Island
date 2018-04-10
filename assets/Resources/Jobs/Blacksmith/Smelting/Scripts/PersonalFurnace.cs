@@ -68,7 +68,6 @@ public class PersonalFurnace : Item
             int p = 0;
             foreach (Item item in ores)
             {
-                Debug.Log(item);
                 if (((Ore)item).purity > max)
                 {
                     max = ((Ore)item).purity;
@@ -78,14 +77,8 @@ public class PersonalFurnace : Item
                 o++;
             }
             sortedOres.Add(temp);
-            Debug.Log(temp);
             ores.Remove(temp);
         }
-
-
-
-
-
     }
 
     public void startSmelting()
@@ -102,7 +95,6 @@ public class PersonalFurnace : Item
             time += Time.deltaTime;
             if(time >= delay)
             {
-                Debug.Log(sortedOres.Count);
                 float t = 0f + l;
                 time = 0f;
                 getChar().addToInventory(CurrentBar.GetComponent<Item>());
@@ -116,7 +108,6 @@ public class PersonalFurnace : Item
                         break;
                     }
                 }
-                Debug.Log(sortedOres.Count);
                 foreach (Item item in smelted)
                 {
                     getChar().removeFromInventory(item);
