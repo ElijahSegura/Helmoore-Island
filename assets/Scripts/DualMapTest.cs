@@ -70,17 +70,11 @@ public class DualMapTest : MonoBehaviour {
             }
         }
     }
-<<<<<<< Updated upstream
-
-    Chunk[,] chunkMap;
-=======
     #endregion
-    private int mapWH = 50000;
 
     Chunk[,] chunkMap;
 
     #region Load map into world
->>>>>>> Stashed changes
     void load()
     {
         chunkMap = new Chunk[mapSize, mapSize];
