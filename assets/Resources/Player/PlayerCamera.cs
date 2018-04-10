@@ -662,9 +662,10 @@ public class PlayerCamera : MonoBehaviour {
     }
 
     public GameObject forge;
-    public void openForge()
+    public void openForge(Anvil a)
     {
         forge.SetActive(true);
+        forge.GetComponent<Forger>().setAnvil(a);
     }
 
     public void setBusy(bool b)

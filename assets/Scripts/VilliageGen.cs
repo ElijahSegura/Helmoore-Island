@@ -3,80 +3,157 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class VilliageGen : MonoBehaviour {
-    private int mapSize = 32;
-    private int chunkSize = 32;//max size for chunksize is 250, 251 is over the mesh vertex limit
-    float[,] MapHeights;
-    float[,] MapHeights2;
-    float chunkscale;
+    private int width = 32;
+    private int height = 32;
     public Material mat;
-    public string Seed;
+    float[,] MapHeights;
+    float[,] area;
+    private float scale = 200;
+    private int midX, midY;
+    private float offX, offY;
 	// Use this for initialization
 	void Start () {
-        
-        MapHeights = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
-        MapHeights2 = new float[(chunkSize + 1) * mapSize, (chunkSize + 1) * mapSize];
-        while(!(MapHeights[(chunkSize * mapSize) / 2, (chunkSize * mapSize) / 2] < 0.5 && MapHeights[(chunkSize * mapSize) / 2, (chunkSize * mapSize) / 2] > .48))
+        midX = (width * height) / 2;
+        midY = (width * height) / 2;
+        offX = Random.Range(0f, 500000f);
+        offY = Random.Range(0f, 500000f);
+        MapHeights = new float[width * height, width * height];
+        area = new float[width * height, width * height];
+        for (int x = 0; x < width * height; x++)
         {
-            float offsetX = Random.Range(-500000f, 500000f);
-            float offsety = Random.Range(-500000f, 500000f);
-            for (int x = 0; x < chunkSize * mapSize; x++)
+            for (int y = 0; y < height * width; y++)
             {
-                for (int y = 0; y < chunkSize * mapSize; y++)
+                MapHeights[x, y] += Mathf.PerlinNoise((x + offX) / scale, (y + offY) / scale);
+                if(MapHeights[x,y] < 0.5f)
                 {
-                    MapHeights[x, y] = Mathf.PerlinNoise((x + offsetX) / 100f, (y + offsety) / 100f);
+                    MapHeights[x, y] = 0f;
                 }
-            }
-
-
-
-            offsetX = Random.Range(-50000f, 50000f);
-            offsety = Random.Range(-50000f, 50000f);
-            for (int x = 0; x < chunkSize * mapSize; x++)
-            {
-                for (int y = 0; y < chunkSize * mapSize; y++)
+                else
                 {
-                    MapHeights2[x, y] = Mathf.PerlinNoise((y + offsetX) / 250f, (x + offsety) / 250f);
+                    MapHeights[x, y] = 1f;
                 }
             }
         }
-        Combine();
-        Modify();
+        for (int x = 0; x < width * height; x++)
+        {
+            for (int y = 0; y < height * width; y++)
+            {
+                area[x, y] += Mathf.PerlinNoise((x + offX) / scale / 2, (y + offY) / scale / 2);
+                if (area[x, y] < 0.3f)
+                {
+                    area[x, y] = 0f;
+                }
+                else
+                {
+                    area[x, y] = 1f;
+                }
+                MapHeights[x, y] *= area[x, y];
+            }
+        }
+        makePaths();
         setTexture();
     }
-    
-    private void Combine()
-    {
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                float a = MapHeights[x,y] / 2f;
-                float b = MapHeights2[x,y] / 2f;
 
-                MapHeights[x, y] = a + b;
-                if(MapHeights[x,y] > 0.5f || (MapHeights[x, y] < 0.48f))
+    private int path = 0;
+    private int limit = 1000;
+    private float low = 1f;
+    private Vector2 pos;
+    private string dir;
+    private float n, s, e, w;
+    private float current;
+    private float newLow;
+    private void makePaths()
+    {
+        int cy = 0;
+        int cx = 0;
+        bool gy = false;
+        bool gx = false;
+        for (int x = 0; x < width * height; x++)
+        {
+            cy = 0;
+            cx = 0;
+            gy = false;
+            gx = false;
+            for (int y = 0; y < width * height; y++)
+            {
+
+
+                if (!gy)
                 {
-                    MapHeights[x, y] = 0;
+                    if (MapHeights[x, y] == 1f)
+                    {
+                        if (y + 1 < width * height)
+                        {
+                            if (MapHeights[x, y + 1] == 0f)
+                            {
+                                gy = true;
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-
-    private void Modify()
-    {
-        int center = chunkSize * mapSize;
-        center /= 2;
-        float size = (float)(center / 1.2);
-        float maxDistance = Vector3.Distance(Vector3.zero, new Vector3(-size, 0, 0));
-        for (int x = 0; x <= chunkSize * mapSize; x++)
-        {
-            for (int y = 0; y <= chunkSize * mapSize; y++)
-            {
-                float posX = x - center, posY = y - center;
-                MapHeights[x, y] = MapHeights[x, y] * (1 - (Vector3.Distance(Vector3.zero, new Vector3(posX, 0, posY)) / maxDistance));
-                if(MapHeights[x,y] > 0)
+                else
                 {
-                    MapHeights[x, y] = 1;
+                    if (y + 1 < width * height)
+                    {
+                        if (MapHeights[x, y] == 0f)
+                        {
+                            cy++;
+                        }
+                        else if (MapHeights[x, y + 1] == 1f)
+                        {
+                            MapHeights[x, y - (cy / 2)] = 0.5f;
+                            gy = false;
+                            cy = 0;
+                        }
+                    }
+                }
+
+                if (!gx)
+                {
+                    if (MapHeights[y, x] == 1f)
+                    {
+                        if (y + 1 < width * height)
+                        {
+                            if (MapHeights[y + 1, x] == 0f)
+                            {
+                                gx = true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (y + 1 < width * height)
+                    {
+                        if (MapHeights[y, x] == 0f)
+                        {
+                            cx++;
+                        }
+                        else if (MapHeights[y + 1, x] == 1f)
+                        {
+                            MapHeights[y - (cx / 2), x] = 0.5f;
+                            gx = false;
+                            cx = 0;
+                        }
+                    }
+                }
+
+            }
+
+
+        }
+
+        for (int x = 0; x < height * width; x++)
+        {
+            for (int y = 0; y < height * width; y++)
+            {
+                if(MapHeights[x,y] != 0.5f)
+                {
+                    MapHeights[x, y] = 0f;
+                }
+                else if(MapHeights[x,y] == 0.5f)
+                {
+                    MapHeights[x, y] = 1f;
                 }
             }
         }
@@ -84,10 +161,10 @@ public class VilliageGen : MonoBehaviour {
 
     private void setTexture()
     {
-        Texture2D p = new Texture2D(mapSize * chunkSize, mapSize * chunkSize);
-        for (int x = 0; x < chunkSize * mapSize; x++)
+        Texture2D p = new Texture2D(width * height, width * height);
+        for (int x = 0; x < height * width; x++)
         {
-            for (int y = 0; y < chunkSize * mapSize; y++)
+            for (int y = 0; y < height * width; y++)
             {
                 p.SetPixel(x, y, Color.white * MapHeights[x, y]);
             }
@@ -95,6 +172,4 @@ public class VilliageGen : MonoBehaviour {
         p.Apply();
         mat.mainTexture = p;
     }
-
-    private int mapWH = 50000; 
 }

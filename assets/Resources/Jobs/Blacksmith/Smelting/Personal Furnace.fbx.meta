@@ -8,15 +8,25 @@ ModelImporter:
     100000: //RootNode
     100002: PersonalFurnace
     100004: Plane
+    100006: Cube.008
+    100008: Plane.001
     400000: //RootNode
     400002: PersonalFurnace
     400004: Plane
+    400006: Cube.008
+    400008: Plane.001
     2300000: PersonalFurnace
     2300002: Plane
+    2300004: Cube.008
+    2300006: Plane.001
     3300000: PersonalFurnace
     3300002: Plane
+    3300004: Cube.008
+    3300006: Plane.001
     4300000: Plane
     4300002: PersonalFurnace
+    4300004: Plane.001
+    4300006: Cube.008
   materials:
     importMaterials: 1
     materialName: 0

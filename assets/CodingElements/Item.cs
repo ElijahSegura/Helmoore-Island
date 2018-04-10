@@ -42,7 +42,7 @@ public abstract class Item : MonoBehaviour {
 
     public void setChar()
     {
-        Character = FindObjectOfType<Character>();
+        Character = GameObject.FindGameObjectWithTag("Player").GetComponent<Character>();
         addself();
         componenets = new List<Component>(GetComponents<Component>());
     }

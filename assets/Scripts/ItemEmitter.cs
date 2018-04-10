@@ -14,6 +14,14 @@ public class ItemEmitter : MonoBehaviour {
         temp.transform.position = transform.position;
 	}
 
+    void Update()
+    {
+        if(!temp)
+        {
+            drop();
+        }
+    }
+
     void drop()
     {
         if(temp == null)

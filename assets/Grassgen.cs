@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Grassgen : MonoBehaviour {
-    private int width = 60, height = 60;
+    private int width = 30, height = 30;
     [SerializeField]
     private GameObject grassPrefab;
-    private float range = 1f;//in both directions
+    private float range = 2f;//in both directions
 
     RaycastHit info;
     Vector3 p;

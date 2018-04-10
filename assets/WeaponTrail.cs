@@ -20,7 +20,11 @@ public class WeaponTrail : MonoBehaviour {
         mesh = new Mesh();
         trail.GetComponent<MeshFilter>().mesh = mesh;
         trail.GetComponent<MeshRenderer>().material = m;
-
+        for (int i = 0; i < portions; i++)
+        {
+            verts.Add(top.transform.position);
+            verts.Add(bottom.transform.position);
+        }
     }
     // Update is called once per frame
     private int frame = 0;
@@ -75,11 +79,10 @@ public class WeaponTrail : MonoBehaviour {
                     triangles.Add(count - 1);
                 }
             }
-            for (int i = 0; i < verts.Count; i += 2)
-            {
-                verts[i + 1] = Vector3.Lerp(verts[i], verts[i + 1], ((float)(i) / verts.Count));
-            }
+            
         }
+        verts[0] = top.transform.position - transform.position;
+        verts[verts.Count - 2] = bottom.transform.position - transform.position;
         updateMesh();
         prevT = transform.position;
         trail.transform.position = bottom.transform.position;

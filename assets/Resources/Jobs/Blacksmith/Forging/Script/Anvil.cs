@@ -12,7 +12,7 @@ public class Anvil : Item
 
     public override void Interact()
     {
-        getCamera().openForge();
+        getCamera().openForge(this);
     }
     public override GameObject getObject()
     {

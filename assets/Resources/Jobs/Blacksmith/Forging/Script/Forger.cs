@@ -26,78 +26,10 @@ public class Forger : MonoBehaviour {
         forging = true;
     }
 
-    void Update()
+    Anvil anvil;
+    public void setAnvil(Anvil a)
     {
-        if(forging)
-        {
-            time += Time.deltaTime;
-            if(time >= del)
-            {
-                for(int i = 0; i < used.wood; i++)
-                {
-                    foreach (Item item in character.getInventory())
-                    {
-                        if(item.itemName.Equals("Wood Log")) {
-                            character.removeFromInventory(item);
-                            break;
-                        }
-                    }
-                }
-                for (int i = 0; i < used.ironIngot; i++)
-                {
-                    foreach (Item item in character.getInventory())
-                    {
-                        if (item.itemName.Equals("Iron Bar"))
-                        {
-                            character.removeFromInventory(item);
-                            break;
-                        }
-                    }
-                }
-                for (int i = 0; i < used.silverIngot; i++)
-                {
-                    foreach (Item item in character.getInventory())
-                    {
-                        if (item.itemName.Equals("Silver Bar"))
-                        {
-                            character.removeFromInventory(item);
-                            break;
-                        }
-                    }
-                }
-
-                for (int i = 0; i < used.goldIngot; i++)
-                {
-                    foreach (Item item in character.getInventory())
-                    {
-                        if (item.itemName.Equals("Gold Bar"))
-                        {
-                            character.removeFromInventory(item);
-                            break;
-                        }
-                    }
-                }
-                for (int i = 0; i < used.copperIngot; i++)
-                {
-                    foreach (Item item in character.getInventory())
-                    {
-                        if (item.itemName.Equals("Copper Bar"))
-                        {
-                            character.removeFromInventory(item);
-                            break;
-                        }
-                    }
-                }
-                character.sendSystemMessage("Forged 1 thing");
-                character.addToInventory(item.GetComponent<Item>());
-                forging = false;
-                foreach(Recipe recipe in FindObjectsOfType<Recipe>())
-                {
-                    recipe.refresh();
-                }
-                time = 0f;
-            }
-        }
+        this.anvil = a;
     }
 }
 /*
