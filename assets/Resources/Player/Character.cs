@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using System;
-public class Character : MonoBehaviour {
+using UnityEngine.Networking;
+using assets.Resources.Player;
+
+public class Character : NetworkBehaviour {
     private Vector3 moveDirection = Vector3.zero;
     private Mob target;
     CharacterController control;
@@ -74,17 +77,6 @@ public class Character : MonoBehaviour {
 
     
 
-    void Start()
-    {
-        Application.targetFrameRate = 144;
-        Application.runInBackground = true;
-        control = GetComponent<CharacterController>();
-        Physics.IgnoreLayerCollision(2, 9);
-        Physics.IgnoreLayerCollision(2, 8);
-        itemHover = GameObject.Instantiate(itemHover);
-    }
-
-
     float pickupDistance = 2f;
     float npcDistance = 5f;
     private bool busy = false;
@@ -92,108 +84,252 @@ public class Character : MonoBehaviour {
     private float dashRegenTime = 6f;
     private float regenTimer = 6f;
 
-    
-    #region Update
-    void Update() {
-        detectClosestItemOrNpc();
-        if (Input.GetButtonUp("Interact"))
+    [SyncVar(hook = "OnServerStateChanged")]
+    public PlayerState state;
+
+    private PlayerState predictedState;
+    private List<PlayerInput> pendingMoves;
+
+    void Awake()
+    {
+        InitState();
+    }
+
+    void Start()
+    {
+        if (isLocalPlayer)
         {
-            doInteract();
-        }
-
-        if (Input.GetButtonDown("Click"))
-        {
-            if(!characterAnimation.GetBool("Attack"))
-            {
-                characterAnimation.SetBool("Attack", true);
-            }
-        }
-
-
-        if (ableToControl)
-        {
-            if (control.isGrounded)
-            {
-                if (Input.GetButton("Jump"))
-                {
-                    moveDirection.y = JumpStrength;
-                }
-            }
-
-            if (control.isGrounded || !control.isGrounded)
-            {
-                if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
-                {
-                    transform.Rotate(rot);
-                    cc.reset(transform.rotation.eulerAngles);
-                    rot.y = 0;
-                }
-                moveDirection.x = Input.GetAxis("Horizontal");
-                moveDirection.z = Input.GetAxis("Vertical");
-                Vector3 t = transform.TransformDirection(moveDirection);
-                moveDirection.x = t.x * speed;
-                moveDirection.z = t.z * speed;
-                if (dash && dashTime > 0)
-                {
-                    if (dashI < dashes)
-                    {
-                        if ((Input.GetButton("Dash")))
-                        {
-                            if (!dashing && dashTime > 1f)
-                            {
-                                if (!Physics.Raycast(transform.position, transform.forward, 20))
-                                {
-                                    teleport(transform.position + (transform.forward * 20));
-                                }
-                            }
-                            checkDash();
-                            dashing = true;
-                        }
-                        else if (dashing)
-                        {
-                            endingDash();
-                        }
-                        else if(!dashing)
-                        {
-                            addRegen();
-                            dashTime = maxDashTime * (regenTimer / dashRegenTime);
-                            camera.updateDashBar(dashTime / maxDashTime);
-                        }
-                    }
-                }
-                else if(!dashing)
-                {
-                    addRegen();
-                    dashTime = maxDashTime * (regenTimer / dashRegenTime);
-                    camera.updateDashBar(dashTime / maxDashTime);
-                }
-                else
-                {
-                    if (dashing)
-                    {
-                        endingDash();
-                    }
-                }
-
-
-            }
-            rot.y += Input.GetAxis("Mouse X") * sensitivity;
+            pendingMoves = new List<PlayerInput>();
+            GetComponentInChildren<PlayerCamera>().enabled = true;
         }
         else
         {
-            moveDirection = new Vector3(0, moveDirection.y, 0);
+            Destroy(GetComponentInChildren<PlayerCamera>().gameObject);
         }
-        if (!control.isGrounded && !freeRunning)
-        {
-            moveDirection -= Gravity * Time.deltaTime;
-        }
-        else if(freeRunning)
-        {
-            moveDirection.y = 0;
-        }
-        control.Move(moveDirection * Time.deltaTime);
     }
-    #endregion
+
+    private void InitState()
+    {
+        state = new PlayerState
+        {
+            timestamp = 0,
+            position = Vector3.zero,
+            rotation = Quaternion.Euler(0, 0, 0),
+        };
+    }
+
+    [Command]
+    void CmdMoveOnServer(PlayerInput playerInput)
+    {
+        state = ProcessPlayerInput(state, playerInput);
+    }
+
+    void SyncState()
+    {
+        if (isServer)
+        {
+            transform.position = state.position;
+            transform.rotation = state.rotation;
+            return;
+        }
+
+        PlayerState stateToRender = isLocalPlayer ? predictedState : state;
+
+        transform.position = Vector3.Lerp(transform.position,
+            stateToRender.position * Settings.PlayerLerpSpacing,
+            Settings.PlayerLerpEasing);
+        transform.rotation = Quaternion.Lerp(transform.rotation,
+            stateToRender.rotation,
+            Settings.PlayerLerpEasing);
+    }
+
+    private PlayerInput GetPlayerInput()
+    {
+        PlayerInput playerInput = new PlayerInput();
+        playerInput.forward += (sbyte)(Input.GetKey(KeyCode.W) ? 1 : 0);
+        playerInput.forward += (sbyte)(Input.GetKey(KeyCode.S) ? -1 : 0);
+        playerInput.rotate += (sbyte)(Input.GetKey(KeyCode.D) ? 1 : 0);
+        playerInput.rotate += (sbyte)(Input.GetKey(KeyCode.A) ? -1 : 0);
+        if (playerInput.forward == 0 && playerInput.rotate == 0)
+            return null;
+        return playerInput;
+    }
+
+    public PlayerState ProcessPlayerInput(PlayerState previous, PlayerInput playerInput)
+    {
+        Vector3 newPosition = previous.position;
+        Quaternion newRotation = previous.rotation;
+
+        if (playerInput.rotate != 0)
+        {
+            newRotation = previous.rotation
+                * Quaternion.Euler(Vector3.up
+                    * Settings.PlayerFixedUpdateInterval
+                    * Settings.PlayerRotateSpeed
+                    * playerInput.rotate);
+        }
+        if (playerInput.forward != 0)
+        {
+            newPosition = previous.position
+                + newRotation
+                    * Vector3.forward
+                    * playerInput.forward
+                    * Settings.PlayerFixedUpdateInterval
+                    * Settings.PlayerMoveSpeed;
+        }
+        return new PlayerState
+        {
+            timestamp = previous.timestamp + 1,
+            position = newPosition,
+            rotation = newRotation
+        };
+    }
+
+    public void OnServerStateChanged(PlayerState newState)
+    {
+        state = newState;
+        if (pendingMoves != null)
+        {
+            while (pendingMoves.Count >
+                  (predictedState.timestamp - state.timestamp))
+            {
+                pendingMoves.RemoveAt(0);
+            }
+            UpdatePredictedState();
+        }
+    }
+
+    public void UpdatePredictedState()
+    {
+        predictedState = state;
+        foreach (PlayerInput playerInput in pendingMoves)
+        {
+            predictedState = ProcessPlayerInput(predictedState, playerInput);
+        }
+    }
+    
+
+    public override void OnStartLocalPlayer()
+    {
+        if (!isLocalPlayer)
+        {
+            Debug.Log("NOT MY CHARACTER!!");
+            return;
+        }
+        gameObject.name = "LOCAL Player";
+        Application.targetFrameRate = 300;
+        camera = GetComponentInChildren<PlayerCamera>();
+        control = GetComponent<CharacterController>();
+        Physics.IgnoreLayerCollision(9, 10);
+        Physics.IgnoreLayerCollision(2, 10);
+
+        if (isLocalPlayer)
+        {
+            pendingMoves = new List<PlayerInput>();
+            GetComponentInChildren<Camera>().enabled = true;
+            GetComponentInChildren<PlayerCamera>().enabled = true;
+        }
+        else
+        {
+            Destroy(GetComponentInChildren<PlayerCamera>().gameObject);
+            //Destroy(GetComponentInChildren<Camera>().gameObject);
+            //GetComponentInChildren<PlayerCamera>().enabled = false;
+            //GetComponentInChildren<Camera>().enabled = false;
+        }
+        base.OnStartLocalPlayer();
+    }
+
+    //void Start()
+    //{
+    //    state = new PlayerState()
+    //    {
+    //        moveDirection = Vector3.zero,
+    //        rotation = Quaternion.Euler(0, 0, 0)
+    //    };
+
+    //    if(!isLocalPlayer)
+    //    {
+    //        Debug.Log("NOT MY CHARACTER!");
+    //        return;
+    //    }
+    //    //Application.targetFrameRate = 300;
+    //    //camera = GetComponentInChildren<PlayerCamera>();
+    //    //control = GetComponent<CharacterController>();
+    //    //Physics.IgnoreLayerCollision(9, 10);
+    //    //Physics.IgnoreLayerCollision(2, 10);
+    //}
+
+       
+
+    void FixedUpdate()
+    {
+        if (isLocalPlayer)
+        {
+            detectClosestItemOrNpc();
+            if (Input.GetButtonUp("Interact"))
+            {
+                doInteract();
+            }
+            //CmdMoveOnServer(GetPlayerActions());
+
+            if (ableToControl)
+            {
+                //ProcessPlayerInput(state, control);
+                if (control.isGrounded)
+                {
+                    if (Input.GetButton("Jump"))
+                    {
+                        moveDirection.y = JumpStrength;
+                    }
+                }
+
+                if (control.isGrounded || !control.isGrounded)
+                {
+                    if (Input.GetButton("Vertical") || Input.GetButton("Horizontal"))
+                    {
+                        transform.Rotate(rot);
+                        //transform.rotation = rot;
+                        GetComponentInChildren<CameraControll>().reset(transform.rotation.eulerAngles);
+                        rot.y = 0;
+                    }
+                    moveDirection.x = Input.GetAxis("Horizontal");
+                    moveDirection.z = Input.GetAxis("Vertical");
+                    Vector3 t = transform.TransformDirection(moveDirection);
+                    moveDirection.x = t.x * speed;
+                    moveDirection.z = t.z * speed;
+
+
+                    if (dashI < dashes)
+                    {
+                        if (Input.GetButtonDown("Right Click") && !dashing)
+                        {
+                            dashCount = 5;
+                            dashing = true;
+                            checkDash();
+                        }
+                        else if (dashing)
+                        {
+                            checkDash();
+                        }
+                    }
+
+                }
+                rot.y += Input.GetAxis("Mouse X") * sensitivity;
+            }
+            else
+            {
+                moveDirection = new Vector3(0, moveDirection.y, 0);
+            }
+            if (!control.isGrounded)
+            {
+                moveDirection.y -= Gravity.magnitude * Time.deltaTime;
+            }
+            control.Move(moveDirection * Time.deltaTime);
+        }
+        //SyncState();
+    }
+
+
     public void chooseClass(Class c)
     {
         this.Class = c;

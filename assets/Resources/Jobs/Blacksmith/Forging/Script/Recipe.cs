@@ -21,98 +21,98 @@ public class Recipe : MonoBehaviour {
     string o;
     void OnEnable()
     {
-        hasWood = false;
-        hasIron = false;
-        List<Item> inventory = new List<Item>(getChar().getInventory());
-        if (wood != 0)
-        {
-            t = typeof(WoodLog);
-            if (inventory.FindAll(findItem).Count >= wood)
-            {
-                hasWood = true;
-            }
-        }
+        //hasWood = false;
+        //hasIron = false;
+        //List<Item> inventory = new List<Item>(getChar().getInventory());
+        //if (wood != 0)
+        //{
+        //    t = typeof(WoodLog);
+        //    if (inventory.FindAll(findItem).Count >= wood)
+        //    {
+        //        hasWood = true;
+        //    }
+        //}
 
-        if (ironIngot != 0)
-        {
-            o = "Iron Bar";
-            if (inventory.FindAll(findOre).Count >= ironIngot)
-            {
-                hasIron = true;
-            }
-        }
-        if (!((wood > 0 == hasWood) && (ironIngot > 0 == hasIron)))
-        {
-            GetComponent<Button>().interactable = false;
-        }
-        else
-        {
-            GetComponent<Button>().interactable = true;
-        }
+        //if (ironIngot != 0)
+        //{
+        //    o = "Iron Bar";
+        //    if (inventory.FindAll(findOre).Count >= ironIngot)
+        //    {
+        //        hasIron = true;
+        //    }
+        //}
+        //if (!((wood > 0 == hasWood) && (ironIngot > 0 == hasIron)))
+        //{
+        //    GetComponent<Button>().interactable = false;
+        //}
+        //else
+        //{
+        //    GetComponent<Button>().interactable = true;
+        //}
     }
 
     void Start()
     {
-        hasWood = false;
-        hasIron = false;
-        List<Item> inventory = new List<Item>(getChar().getInventory());
-        if (wood != 0)
-        {
-            t = typeof(WoodLog);
-            if (inventory.FindAll(findItem).Count >= wood)
-            {
-                hasWood = true;
-            }
-        }
+        //hasWood = false;
+        //hasIron = false;
+        //List<Item> inventory = new List<Item>(getChar().getInventory());
+        //if (wood != 0)
+        //{
+        //    t = typeof(WoodLog);
+        //    if (inventory.FindAll(findItem).Count >= wood)
+        //    {
+        //        hasWood = true;
+        //    }
+        //}
 
-        if (ironIngot != 0)
-        {
-            o = "Iron Bar";
-            if (inventory.FindAll(findOre).Count >= ironIngot)
-            {
-                hasIron = true;
-            }
-        }
-        if (!((wood > 0 == hasWood) && (ironIngot > 0 == hasIron)))
-        {
-            GetComponent<Button>().interactable = false;
-        }
-        else
-        {
-            GetComponent<Button>().interactable = true;
-        }
+        //if (ironIngot != 0)
+        //{
+        //    o = "Iron Bar";
+        //    if (inventory.FindAll(findOre).Count >= ironIngot)
+        //    {
+        //        hasIron = true;
+        //    }
+        //}
+        //if (!((wood > 0 == hasWood) && (ironIngot > 0 == hasIron)))
+        //{
+        //    GetComponent<Button>().interactable = false;
+        //}
+        //else
+        //{
+        //    GetComponent<Button>().interactable = true;
+        //}
     }
 
     public void refresh()
     {
-        hasWood = false;
-        hasIron = false;
-        List<Item> inventory = new List<Item>(getChar().getInventory());
-        if (wood != 0)
-        {
-            t = typeof(WoodLog);
-            if (inventory.FindAll(findItem).Count >= wood)
-            {
-                hasWood = true;
-            }
-        }
+        //hasWood = false;
+        //hasIron = false;
+        //List<Item> inventory = new List<Item>(getChar().getInventory());
+        //if (wood != 0)
+        //{
+        //    t = typeof(WoodLog);
+        //    if (inventory.FindAll(findItem).Count >= wood)
+        //    {
+        //        hasWood = true;
+        //    }
+        //}
 
-        if (ironIngot != 0)
-        {
-            o = "Iron Bar";
-            if (inventory.FindAll(findOre).Count >= ironIngot)
-            {
-                hasIron = true;
-            }
-        }
-        if (!((wood > 0 == hasWood) && (ironIngot > 0 == hasIron)))
-        {
-            GetComponent<Button>().interactable = false;
-        }
-        else
-        {
-            GetComponent<Button>().interactable = true;
-        }
+        //if (ironIngot != 0)
+        //{
+        //    o = "Iron Bar";
+        //    if (inventory.FindAll(findOre).Count >= ironIngot)
+        //    {
+        //        hasIron = true;
+        //    }
+        //}
+        //if (!((wood > 0 == hasWood) && (ironIngot > 0 == hasIron)))
+        //{
+        //    GetComponent<Button>().interactable = false;
+        //}
+        //else
+        //{
+        //    GetComponent<Button>().interactable = true;
+        //}
         
     }
 
@@ -133,14 +133,14 @@ public class Recipe : MonoBehaviour {
         return false;
     }
 
-    public Character getChar()
-    {
-        return Camera.main.transform.parent.parent.gameObject.GetComponent<Character>();
-    }
+    //public Character getChar()
+    //{
+    //    return Camera.main.transform.parent.parent.gameObject.GetComponent<Character>();
+    //}
 
     public void Click()
     {
         Forger.set(gives, delay, GetComponent<Recipe>());
-        getChar().getCamera().setForgingRecipe(this);
+        //getChar().getCamera().setForgingRecipe(this);
     }
 }

@@ -10,7 +10,7 @@ public class Forger : MonoBehaviour {
     private Recipe used;
     void Start()
     {
-        character = Camera.main.transform.parent.parent.GetComponent<Character>();
+        //character = Camera.main.transform.parent.parent.GetComponent<Character>();
     }
 
 	public void set(GameObject obj, float delay, Recipe u)
